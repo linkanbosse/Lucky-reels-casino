@@ -942,6 +942,8 @@ export function mountSlot(config) {
     else play();
   });
 
+  wallet.onError((text) => toast(text, { icon: icons.info, duration: 4000 }));
+
   wallet.onChange(({ delta }) => {
     renderBalance();
     if (delta > 0) {

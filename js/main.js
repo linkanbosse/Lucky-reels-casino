@@ -7,6 +7,8 @@ import { icons, coinSvg } from "./ui/icons.js";
 import { coverArt } from "./ui/art.js";
 import { toast, openModal, closeModal, coinBurst } from "./ui/feedback.js";
 import { mountHeroMachine } from "./ui/hero-machine.js";
+import { account } from "./lib/account.js";
+import { openAccount, bindAccountUi } from "./ui/account-ui.js";
 
 const $ = (sel, root = document) => root.querySelector(sel);
 const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
@@ -161,25 +163,36 @@ function openGame(id) {
   });
 }
 
-/* ---------- Topplista (exempeldata tills steg 4) ---------- */
-const SAMPLE_LEADERS = [
-  ["LuckyLinnea", 1_284_500],
-  ["SpinKungen", 982_150],
-  ["Diamant_Dan", 760_900],
-  ["Klöver7", 512_300],
-  ["NattUgglan", 401_750],
-];
+/* ---------- Topplista ---------- */
+let leaderOrder = "balance";
+let leaderTimer = 0;
 
-function renderLeaders() {
-  $("#leaders").innerHTML =
-    SAMPLE_LEADERS.map(
-      ([name, score], i) => `
-      <div class="leader">
+async function renderLeaders() {
+  const el = $("#leaders");
+  const me = account.user?.id;
+  el.setAttribute("aria-busy", "true");
+  try {
+    const rows = await account.leaderboard(leaderOrder, 10);
+    const field = leaderOrder === "balance" ? "balance" : "biggest_win";
+    el.innerHTML = rows.length
+      ? rows
+          .map(
+            (r, i) => `
+      <div class="leader${r.id === me ? " is-me" : ""}">
         <span class="leader__rank">${i + 1}</span>
-        <span class="leader__name">${escapeHtml(name)}</span>
-        <span class="leader__score">${formatCoins(score)}</span>
+        <span class="leader__name">${escapeHtml(r.username)}${r.id === me ? " (du)" : ""}</span>
+        <span class="leader__score">${formatCoins(r[field])}</span>
       </div>`,
-    ).join("") + `<p class="leaders__note">Exempeldata – riktiga topplistor kommer när inloggning är på plats.</p>`;
+          )
+          .join("") +
+        (me ? "" : `<p class="leaders__note">Skapa ett konto för att synas på topplistan.</p>`)
+      : `<p class="leaders__note">Ingen på listan än – skapa ett konto och bli först!</p>`;
+  } catch (e) {
+    console.warn("Topplistan kunde inte laddas:", e);
+    el.innerHTML = `<p class="leaders__note">Topplistan kunde inte laddas just nu.</p>`;
+  } finally {
+    el.removeAttribute("aria-busy");
+  }
 }
 
 /* ---------- Händelser ---------- */
@@ -205,14 +218,15 @@ function bindEvents() {
 
   $$("[data-bonus]").forEach((b) => b.addEventListener("click", onBonusClick));
 
-  $$("[data-login]").forEach((b) =>
-    b.addEventListener("click", () =>
-      toast("Inloggning och sparat saldo i molnet kommer snart. Ditt saldo sparas lokalt så länge.", {
-        icon: icons.user,
-        duration: 3800,
-      }),
-    ),
-  );
+  $$("[data-login]").forEach((b) => b.addEventListener("click", openAccount));
+
+  $("#lb-tabs").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-order]");
+    if (!b) return;
+    leaderOrder = b.dataset.order;
+    $$("#lb-tabs [data-order]").forEach((t) => t.setAttribute("aria-pressed", String(t === b)));
+    renderLeaders();
+  });
 
   $("[data-play-now]").addEventListener("click", () => {
     $("#lobby").scrollIntoView({ behavior: "smooth" });
@@ -221,6 +235,17 @@ function bindEvents() {
   wallet.onChange(({ delta }) => {
     renderBalance();
     if (delta > 0) bumpBalance();
+  });
+
+  bindAccountUi({
+    onChange: ({ event }) => {
+      renderBalance();
+      renderBonusButtons();
+      if (event !== "PROFILE") {
+        clearTimeout(leaderTimer);
+        leaderTimer = setTimeout(renderLeaders, 250);
+      }
+    },
   });
 
   // Uppdatera bonusknappen om sidan står öppen när nedräkningen går ut
@@ -233,6 +258,5 @@ renderBalance();
 renderBonusButtons();
 renderChips();
 renderGrid();
-renderLeaders();
 bindEvents();
 mountHeroMachine($(".machine"));

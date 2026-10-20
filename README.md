@@ -22,6 +22,10 @@ js/
   data/games.js         Spelkatalogen – lobbyn byggs från denna lista
   lib/wallet.js         Plånbok för låtsasmynt (debit/credit/bonus)
   lib/storage.js        Säker localStorage
+  lib/account.js        Inloggning, profil och topplista via Supabase
+  config.js             Supabase-adress och publik nyckel
+  vendor/supabase.js    supabase-js 2.117.2 som ett ESM-paket (MIT)
+  ui/account-ui.js      Inloggning, registrering, profil, nytt lösenord
   ui/symbols.js         Slotsymboler i SVG (delas med slotmotorn)
   ui/art.js             Genererad omslagsgrafik för spelkort
   ui/icons.js           Ikoner och myntgrafik
@@ -34,6 +38,7 @@ js/
   slot/games/<id>.js    Ett spels konfiguration: symboler, vinster, vikter, specialfunktioner
 games/<id>/index.html   Spelsidan (laddar konfigurationen och slot-game.js)
 tools/simulate.mjs      Simulerar ett spel och räknar ut RTP
+supabase/schema.sql     Databasen: profiler, saldo, daglig bonus, säkra funktioner
 .github/workflows/      Publicering till GitHub Pages
 ```
 
@@ -41,8 +46,9 @@ tools/simulate.mjs      Simulerar ett spel och räknar ut RTP
 
 1. ✅ Repo, lobby, designsystem, GitHub Pages
 2. ✅ Gemensam slotmotor + Golden Sevens, Diamond Rush, Royal Crown
-3. Inloggning och sparat saldo med Supabase
-4. Topplistor + resterande slots (10–15 totalt)
+3. ✅ Avancerade slots: Cherry Blast (kluster), Moonlight Magic (kaskader), Pharaoh's Gold (Hold & Win)
+4. ✅ Inloggning, sparat saldo och topplistor med Supabase
+5. Bordsspel (blackjack, roulette) och resterande slots
 
 ## Lägga till en slot
 
@@ -56,6 +62,9 @@ tools/simulate.mjs      Simulerar ett spel och räknar ut RTP
 | Golden Sevens | 3×3 | 5 | WILD dubblar vinsten | 95,6 % |
 | Diamond Rush | 5×3 | 20 | Expanderande diamant-wild på hjul 2–4 | 96,0 % |
 | Royal Crown | 5×3 | 25 | Free spins ×3, krona-wild, jackpott (6+ kronor) | 95,8 % |
+| Cherry Blast | 6×5 | Kluster | Klustervinster, kaskader, multiplikatorbomber i free spins | ca 95,5 % |
+| Moonlight Magic | 5×4 | 40 | Kaskader med multiplikator ×1–×5 (×3–×15 i free spins) | 96,4 % |
+| Pharaoh's Gold | 5×3 | 20 | Hold & Win med Mini/Minor/Major/Grand | 95,3 % |
 
 ## Publicering
 
@@ -68,3 +77,18 @@ Engångsinställning: **Settings → Pages → Source: GitHub Actions**.
 python3 -m http.server 8080
 ```
 och öppna http://localhost:8080. Sidan använder ES-moduler och måste därför köras via en server, inte som fil.
+
+## Konton med Supabase
+
+Utan konto sparas saldot lokalt i webbläsaren. Med konto ligger saldot i Supabase och följer med mellan enheter.
+
+Engångsinställning i Supabase-projektet:
+
+1. **SQL Editor → New query**: klistra in hela `supabase/schema.sql` och tryck **Run**.
+2. **Authentication → URL Configuration**: sätt **Site URL** till `https://linkanbosse.github.io/Lucky-reels-casino/`
+   och lägg till samma adress under **Redirect URLs**.
+
+Saldot ändras bara via databasfunktionerna `apply_round`, `claim_daily` och `refill`, som kontrollerar inloggning,
+insatsgräns (max 1 000) och att saldot räcker. Spelresultaten räknas fortfarande ut i webbläsaren, så en tekniskt
+kunnig spelare skulle kunna fuska till sig mynt inom gränserna. För låtsaspengar är det en rimlig avvägning;
+helt fusksäkert kräver att snurren räknas ut på servern (t.ex. med en Supabase Edge Function).

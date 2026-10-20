@@ -599,3 +599,16 @@
     opacity: 0;
   }
 }
+
+.leader.is-me {
+  background: rgba(255, 211, 107, 0.12) !important;
+  box-shadow: inset 0 0 0 1px rgba(255, 211, 107, 0.4);
+}
+
+.header__login [data-login-label],
+.bottom-nav [data-login-label] {
+  max-width: 12ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

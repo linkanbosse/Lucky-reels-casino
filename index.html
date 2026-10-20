@@ -35,7 +35,7 @@
         <span data-balance>0</span>
       </div>
       <button class="btn btn--ghost btn--icon" type="button" data-bonus aria-label="Hämta bonus" data-icon="gift"></button>
-      <button class="btn btn--royal header__login" type="button" data-login>Logga in</button>
+      <button class="btn btn--royal header__login" type="button" data-login data-icon="user"><span data-login-label>Logga in</span></button>
     </div>
   </header>
 
@@ -87,10 +87,13 @@
 
     <section class="section" id="leaderboard" aria-labelledby="lb-title">
       <div class="section__head">
-        <h2 class="section__title" id="lb-title">Veckans topplista</h2>
-        <span class="section__meta">Största saldo</span>
+        <h2 class="section__title" id="lb-title">Topplista</h2>
+        <div class="seg" id="lb-tabs" role="group" aria-label="Sortera topplistan">
+          <button type="button" data-order="balance" aria-pressed="true">Saldo</button>
+          <button type="button" data-order="biggest_win" aria-pressed="false">Största vinst</button>
+        </div>
       </div>
-      <div class="leaders" id="leaders"></div>
+      <div class="leaders" id="leaders"><p class="leaders__note">Laddar topplistan…</p></div>
     </section>
   </main>
 
@@ -106,7 +109,7 @@
     <a href="#lobby" aria-current="page" data-icon="reels">Spel</a>
     <a href="#leaderboard" data-icon="trophy">Topplista</a>
     <button type="button" data-bonus data-icon="gift">Bonus</button>
-    <button type="button" data-login data-icon="user">Profil</button>
+    <button type="button" data-login data-icon="user"><span data-login-label>Logga in</span></button>
   </nav>
 
   <div class="toasts" aria-live="polite"></div>
