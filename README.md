@@ -2,7 +2,7 @@
 
 Ett socialt casino med **låtsasmynt** – slots, bordsspel och topplistor. Inga riktiga pengar används.
 
-**Live:** https://linkanbosse.github.io/lucky-reels-casino/
+**Live:** https://linkanbosse.github.io/Lucky-reels-casino/
 
 ## Arkitektur
 
