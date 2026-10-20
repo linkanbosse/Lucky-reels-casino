@@ -96,7 +96,7 @@ function matches(game) {
 function cardHtml(game, i) {
   const soon = game.status !== "live";
   const badges = game.tags.map((t) => BADGE[t] ?? "").join("");
-  const meta = game.kind === "slot" ? `${game.grid} · ${game.lines} linjer` : "Bordsspel";
+  const meta = game.kind === "slot" ? `${game.grid} · ${typeof game.lines === "number" ? `${game.lines} linjer` : game.lines}` : "Bordsspel";
   return `
     <button class="card${soon ? " is-soon" : ""}" type="button" data-game="${game.id}" style="--i:${i}"
       aria-label="${escapeHtml(game.name)}${soon ? " – kommer snart" : ""}">

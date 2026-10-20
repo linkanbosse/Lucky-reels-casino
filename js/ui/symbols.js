@@ -157,6 +157,53 @@ const shapes = {
       <path d="M52 26c0-8 2-14 8-18" stroke="#713f12" stroke-width="4" stroke-linecap="round" fill="none"/>
       ${berries}`;
   },
+  bomb() {
+    const a = id("bo");
+    const b = id("bo");
+    return `<defs><radialGradient id="${a}" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#fbcfe8"/><stop offset=".45" stop-color="#ec4899"/><stop offset="1" stop-color="#701a75"/></radialGradient>${lin(b, ["#fde68a", "#f59e0b"])}</defs>
+      <circle cx="48" cy="58" r="32" fill="url(#${a})" stroke="#4a044e" stroke-width="4"/>
+      <rect x="40" y="18" width="18" height="12" rx="3" fill="#6b21a8" stroke="#3b0764" stroke-width="3" transform="rotate(20 49 24)"/>
+      <path d="M56 20c6-8 14-10 20-6" stroke="#a16207" stroke-width="4" fill="none" stroke-linecap="round"/>
+      <path d="m78 12 3 5 6 1-4 4 1 6-6-3-5 3 1-6-4-4 6-1Z" fill="url(#${b})" stroke="#b45309" stroke-width="1.5"/>
+      <ellipse cx="36" cy="44" rx="9" ry="6" fill="#fff" opacity=".55" transform="rotate(-30 36 44)"/>`;
+  },
+  coin() {
+    const a = id("cn");
+    const b = id("cn");
+    return `<defs>${lin(a, ["#fff4c2", "#facc15", "#a16207"], 1, 1)}${lin(b, ["#fde68a", "#ca8a04"], 1, 0)}</defs>
+      <circle cx="50" cy="50" r="44" fill="url(#${a})" stroke="#713f12" stroke-width="4"/>
+      <circle cx="50" cy="50" r="34" fill="url(#${b})" stroke="#a16207" stroke-width="2.5"/>
+      <path d="M50 22 74 66H26Z" fill="#fef3c7" opacity=".5" stroke="#a16207" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M50 22 62 44H38Z" fill="#fff7d6" opacity=".6"/>
+      <path d="M22 34c6-10 16-16 28-16" stroke="#fff" stroke-opacity=".7" stroke-width="4" stroke-linecap="round" fill="none"/>`;
+  },
+  ankh() {
+    const g = id("an");
+    return `<defs>${lin(g, ["#fef08a", "#eab308", "#854d0e"], 1, 1)}</defs>
+      <path d="M50 8c-14 0-22 12-22 24 0 10 6 18 12 22H18v14h24v26h16V68h24V54H60c6-4 12-12 12-22 0-12-8-24-22-24Zm0 14c6 0 8 6 8 11 0 7-4 14-8 18-4-4-8-11-8-18 0-5 2-11 8-11Z"
+        fill="url(#${g})" stroke="#713f12" stroke-width="4" stroke-linejoin="round"/>
+      <path d="M24 58h12" stroke="#fff" stroke-opacity=".6" stroke-width="3" stroke-linecap="round"/>`;
+  },
+  eye() {
+    const a = id("ey");
+    const b = id("ey");
+    return `<defs>${lin(a, ["#a5f3fc", "#0891b2", "#164e63"], 1, 1)}${lin(b, ["#fde68a", "#ca8a04"])}</defs>
+      <path d="M6 46c14-18 30-26 46-26s30 8 42 26c-12 16-26 24-42 24S20 62 6 46Z" fill="#f8fafc" stroke="#0f172a" stroke-width="5" stroke-linejoin="round"/>
+      <circle cx="50" cy="45" r="15" fill="url(#${a})" stroke="#0f172a" stroke-width="4"/>
+      <circle cx="50" cy="45" r="6" fill="#0f172a"/><circle cx="45" cy="40" r="3" fill="#fff"/>
+      <path d="M8 26c16-10 30-12 44-10M42 70l-6 22M30 66c-6 10-4 22 8 22" stroke="url(#${b})" stroke-width="6" fill="none" stroke-linecap="round"/>`;
+  },
+  scarab() {
+    const a = id("sc");
+    const b = id("sc");
+    return `<defs><radialGradient id="${a}" cx=".4" cy=".3" r=".8"><stop offset="0" stop-color="#6ee7b7"/><stop offset=".5" stop-color="#059669"/><stop offset="1" stop-color="#022c22"/></radialGradient>${lin(b, ["#fde68a", "#ca8a04"])}</defs>
+      <g stroke="#022c22" stroke-width="4" stroke-linecap="round"><path d="M30 46 12 38M30 58 10 62M30 70 16 84M70 46l18-8M70 58l20 4M70 70l14 14"/></g>
+      <path d="M8 30c10-4 20 0 24 8M92 30c-10-4-20 0-24 8" stroke="url(#${b})" stroke-width="6" fill="none" stroke-linecap="round"/>
+      <circle cx="50" cy="26" r="12" fill="url(#${b})" stroke="#713f12" stroke-width="3"/>
+      <ellipse cx="50" cy="60" rx="24" ry="30" fill="url(#${a})" stroke="#022c22" stroke-width="4"/>
+      <path d="M50 32v58" stroke="#022c22" stroke-width="3"/>
+      <ellipse cx="40" cy="50" rx="5" ry="9" fill="#fff" opacity=".35"/>`;
+  },
   wild() {
     const a = id("wd");
     const b = id("wd");

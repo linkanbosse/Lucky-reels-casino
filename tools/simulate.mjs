@@ -1,6 +1,6 @@
 // Simulerar ett slotspel och skriver ut återbetalning (RTP), träfffrekvens m.m.
 // Användning: node tools/simulate.mjs <spel-id> [antal snurr] [seed]
-import { spin, prepare } from "../js/slot/engine.js";
+import { playRound, prepare } from "../js/slot/engine.js";
 
 const id = process.argv[2];
 const N = Number(process.argv[3] ?? 1_000_000);
@@ -17,20 +17,22 @@ const rnd = () => {
 
 const bet = 100;
 let paid = 0, won = 0, hits = 0, features = 0, featureWin = 0, jackpots = 0, big = 0, maxWin = 0;
-const freeMult = config.freeSpinMultiplier ?? 1;
+let holdWins = 0, holdWinWin = 0, grands = 0, cascades = 0;
 
 for (let i = 0; i < N; i++) {
   paid += bet;
-  const r = spin(config, { bet, rnd });
+  const r = playRound(config, { bet, rnd });
   let total = r.total;
+  cascades += r.steps.length - 1;
   if (r.jackpot) jackpots++;
+  if (r.holdWin) { holdWins++; holdWinWin += r.holdWin.total; if (r.holdWin.full) grands++; }
   let pending = r.scatter?.freeSpins ?? 0;
   if (pending) {
     features++;
     let fs = 0;
     while (pending > 0) {
       pending--;
-      const f = spin(config, { bet, multiplier: freeMult, rnd });
+      const f = playRound(config, { bet, free: true, rnd });
       fs += f.total;
       if (f.jackpot) jackpots++;
       pending += f.scatter?.freeSpins ?? 0;
@@ -45,12 +47,13 @@ for (let i = 0; i < N; i++) {
 }
 
 const pct = (x) => (x * 100).toFixed(2) + " %";
+const every = (n) => (n ? `1 på ${Math.round(N / n).toLocaleString("sv-SE")}` : "aldrig");
 console.log(`${config.name} – ${N.toLocaleString("sv-SE")} snurr`);
 console.log(`RTP:               ${pct(won / paid)}`);
 console.log(`Träfffrekvens:     ${pct(hits / N)}`);
-if (features) {
-  console.log(`Free spins:        1 på ${Math.round(N / features)} snurr, ${pct(featureWin / paid)} av RTP`);
-}
-if (config.jackpot) console.log(`Jackpott:          ${jackpots} st (1 på ${jackpots ? Math.round(N / jackpots) : "∞"})`);
-console.log(`Storvinst (≥20×):  1 på ${big ? Math.round(N / big) : "∞"} snurr`);
+if (config.cascade) console.log(`Kaskader/snurr:    ${(cascades / N).toFixed(3)}`);
+if (features) console.log(`Free spins:        ${every(features)} snurr, ${pct(featureWin / paid)} av RTP`);
+if (config.holdWin) console.log(`Hold & Win:        ${every(holdWins)} snurr, ${pct(holdWinWin / paid)} av RTP, Grand ${grands} st`);
+if (config.jackpot) console.log(`Jackpott:          ${jackpots} st (${every(jackpots)})`);
+console.log(`Storvinst (≥20×):  ${every(big)} snurr`);
 console.log(`Största vinst:     ${(maxWin / bet).toFixed(1)}× insatsen`);
