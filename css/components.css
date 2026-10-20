@@ -241,7 +241,8 @@
   width: 100%;
   max-width: 440px;
   max-height: calc(100dvh - 32px);
-  overflow: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
   border-radius: var(--r-lg);
   background: linear-gradient(180deg, #1d1838, #120f22);
   border: 1px solid var(--border-strong);
@@ -456,6 +457,36 @@
   display: flex;
   align-items: center;
   gap: var(--sp-3);
+  padding-right: 44px; /* plats för stängknappen */
+}
+
+.profile-head > div {
+  flex: 1;
+  min-width: 0;
+}
+
+.profile-head .auth__title {
+  padding-right: 0;
+  font-size: clamp(1.05rem, 5vw, 1.4rem);
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+.profile-head .form__intro {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.profile-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sp-2);
+  margin-top: var(--sp-4);
+}
+
+.profile-actions .btn {
+  width: 100%;
 }
 
 .profile-avatar {

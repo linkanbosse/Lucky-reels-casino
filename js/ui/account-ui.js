@@ -147,10 +147,18 @@ function openProfile() {
         <div><dt>Totalt vunnet</dt><dd>${formatCoins(s.totalWon)}</dd></div>
       </dl>
       <p class="form__intro">Ditt saldo sparas i molnet och följer med till alla enheter där du loggar in.</p>
-      <button class="btn btn--ghost" type="button" data-logout style="width:100%;margin-top:16px">Logga ut</button>
+      <div class="profile-actions">
+        ${wallet.canRefill() ? `<button class="btn btn--gold" type="button" data-refill>Fyll på mynt</button>` : ""}
+        <button class="btn btn--ghost" type="button" data-logout ${wallet.canRefill() ? "" : 'style="grid-column:1/-1"'}>Logga ut</button>
+      </div>
     </div>`,
     "Profil",
   );
+  $("[data-refill]", content)?.addEventListener("click", () => {
+    const amount = wallet.refill();
+    closeModal();
+    if (amount) toast(`Påfyllning! +${formatCoins(amount)} mynt`, { variant: "gold", icon: icons.gift });
+  });
   $("[data-logout]", content).addEventListener("click", async () => {
     await account.signOut();
     closeModal();
