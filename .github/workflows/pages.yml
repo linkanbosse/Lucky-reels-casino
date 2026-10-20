@@ -28,7 +28,7 @@ jobs:
       - name: Samla ihop sidans filer
         run: |
           mkdir -p _site
-          cp -r index.html 404.html manifest.webmanifest css js assets games _site/
+          cp -r index.html 404.html manifest.webmanifest css js assets games admin _site/
 
       - uses: actions/upload-pages-artifact@v3
         with:

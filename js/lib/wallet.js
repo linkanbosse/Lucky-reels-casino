@@ -7,20 +7,35 @@
 
 import { load, save } from "./storage.js";
 import { account } from "./account.js";
+import { xpForBet, levelForXp, rewardBetween } from "./levels.js";
 
 export const START_BALANCE = 10_000;
 export const DAILY_BONUS = 1_000;
 export const REFILL_LIMIT = 100; // under detta saldo får man fylla på gratis
 const DAY_MS = 24 * 60 * 60 * 1000;
+export const WATCH_REWARD = 250;
+const WATCH_LIMIT = 10;
+const WATCH_GAP = 3 * 60 * 1000;
+
+// Räknaren för "titta och få mynt" i utloggat läge (nollställs varje dag)
+function watchState() {
+  const day = new Date().toDateString();
+  const w = load("watch", { day, count: 0, last: 0, started: 0 });
+  return w.day === day ? w : { day, count: 0, last: w.last ?? 0, started: 0 };
+}
 
 const listeners = new Set();
 const errorListeners = new Set();
+const levelListeners = new Set();
+let game = null; // spelet som spelas just nu (för turneringar)
 
 let local = load("wallet", null);
 if (!local || typeof local.balance !== "number" || !Number.isFinite(local.balance)) {
   local = { balance: START_BALANCE, lastDaily: 0, totalWon: 0, biggestWin: 0, spins: 0 };
   save("wallet", local);
 }
+local.xp ??= 0;
+local.level ??= levelForXp(local.xp);
 
 // Serverläge
 let remote = null; // { balance, lastDaily, totalWon, biggestWin, spins }
@@ -41,6 +56,8 @@ function fromProfile(p) {
     totalWon: Number(p.total_won),
     biggestWin: Number(p.biggest_win),
     spins: Number(p.spins),
+    xp: Number(p.xp ?? 0),
+    level: Number(p.level ?? 1),
   };
 }
 
@@ -49,6 +66,7 @@ function reportError(error) {
   const text =
     code.includes("insufficient_funds") ? "Saldot räckte inte enligt servern – saldot har uppdaterats."
     : code.includes("win_too_large") ? "Servern godkände inte vinsten."
+    : code.includes("banned") ? "Kontot är avstängt. Kontakta sidans ägare."
     : code.includes("not_logged_in") || code.includes("JWT") ? "Du har loggats ut. Logga in igen för att spara saldot."
     : "Kunde inte spara saldot just nu. Det synkas igen när anslutningen fungerar.";
   for (const cb of errorListeners) cb(text);
@@ -59,10 +77,16 @@ function sync(delta, fn) {
   pending += delta;
   queue = queue
     .then(fn)
-    .then((serverBalance) => {
+    .then((res) => {
       pending -= delta;
       if (remote) {
-        remote.balance = Number(serverBalance) + pending;
+        // play_round svarar med { balance, xp, level }, äldre funktioner bara med saldot
+        const data = res && typeof res === "object" ? res : { balance: res };
+        remote.balance = Number(data.balance) + pending;
+        if (data.xp !== undefined) {
+          remote.xp = Math.max(remote.xp, Number(data.xp));
+          remote.level = Math.max(remote.level, Number(data.level));
+        }
         emit(0, "sync");
       }
     })
@@ -104,6 +128,33 @@ account.onChange(({ user, profile }) => {
   else emit(0, "account");
 });
 
+// Skickar en runda till servern. Har databasen inte uppdaterats än (play_round saknas)
+// används den äldre apply_round, så att sidan fungerar under tiden.
+let legacy = false;
+async function roundRpc(bet, win) {
+  if (!legacy) {
+    try {
+      return await account.rpc("play_round", { p_bet: bet, p_win: win, p_game: game });
+    } catch (e) {
+      if (!/play_round|PGRST202|schema cache/i.test(`${e?.message} ${e?.code}`)) throw e;
+      legacy = true;
+    }
+  }
+  return account.rpc("apply_round", { p_bet: bet, p_win: win });
+}
+
+// Ger XP för en insats och delar ut nivåbelöningen. Returnerar belöningen (0 om ingen ny nivå).
+function addXp(s, bet) {
+  const before = s.level;
+  s.xp += xpForBet(bet);
+  s.level = levelForXp(s.xp);
+  if (s.level <= before) return 0;
+  const reward = rewardBetween(before, s.level);
+  s.balance += reward;
+  for (const cb of levelListeners) cb({ level: s.level, reward });
+  return reward;
+}
+
 export const wallet = {
   get balance() {
     return state().balance;
@@ -114,8 +165,55 @@ export const wallet = {
   },
 
   get stats() {
-    const { totalWon, biggestWin, spins } = state();
-    return { totalWon, biggestWin, spins };
+    const { totalWon, biggestWin, spins, xp, level } = state();
+    return { totalWon, biggestWin, spins, xp: xp ?? 0, level: level ?? 1 };
+  },
+
+  /** Talar om vilket spel som spelas, så att turneringar för just det spelet får poäng. */
+  setGame(id) {
+    game = id;
+  },
+
+  /**
+   * "Titta och få mynt": startWatch() innan bilden visas, claimWatch() efter 20 sekunder.
+   * Svarar { ok, reason?, waitS?, left? } respektive belöningen (0 om den nekades).
+   */
+  async startWatch() {
+    if (remote) {
+      const r = await account.rpc("start_watch");
+      return { ok: r.ok, reason: r.reason, waitS: r.wait_s, left: r.left };
+    }
+    const w = watchState();
+    if (w.count >= WATCH_LIMIT) return { ok: false, reason: "limit", left: 0 };
+    const wait = Math.ceil((w.last + WATCH_GAP - Date.now()) / 1000);
+    if (wait > 0) return { ok: false, reason: "wait", waitS: wait, left: WATCH_LIMIT - w.count };
+    w.started = Date.now();
+    save("watch", w);
+    return { ok: true, left: WATCH_LIMIT - w.count };
+  },
+
+  async claimWatch() {
+    if (remote) {
+      const r = await account.rpc("claim_watch_reward");
+      const before = remote.balance;
+      remote.balance = Number(r.balance) + pending;
+      emit(remote.balance - before, "watch");
+      return r.ok ? WATCH_REWARD : 0;
+    }
+    const w = watchState();
+    if (!w.started || Date.now() - w.started < 19_000 || w.count >= WATCH_LIMIT) return 0;
+    Object.assign(w, { count: w.count + 1, last: Date.now(), started: 0 });
+    save("watch", w);
+    local.balance += WATCH_REWARD;
+    save("wallet", local);
+    emit(WATCH_REWARD, "watch");
+    return WATCH_REWARD;
+  },
+
+  /** Anropas när spelaren når en ny nivå: cb({ level, reward }). */
+  onLevelUp(cb) {
+    levelListeners.add(cb);
+    return () => levelListeners.delete(cb);
   },
 
   /** Drar en insats. Returnerar false om saldot inte räcker. */
@@ -124,10 +222,14 @@ export const wallet = {
     const s = state();
     if (!(amount > 0) || amount > s.balance) return false;
     s.balance -= amount;
-    if (reason === "bet") s.spins += 1;
-    if (remote) sync(-amount, () => account.rpc("apply_round", { p_bet: amount, p_win: 0 }));
+    let reward = 0;
+    if (reason === "bet") {
+      s.spins += 1;
+      reward = addXp(s, amount);
+    }
+    if (remote) sync(reward - amount, () => roundRpc(amount, 0));
     else save("wallet", local);
-    emit(-amount, reason);
+    emit(reward - amount, reason);
     return true;
   },
 
@@ -141,7 +243,7 @@ export const wallet = {
       s.totalWon += amount;
       s.biggestWin = Math.max(s.biggestWin, amount);
     }
-    if (remote) sync(amount, () => account.rpc("apply_round", { p_bet: 0, p_win: amount }));
+    if (remote) sync(amount, () => roundRpc(0, amount));
     else save("wallet", local);
     emit(amount, reason);
   },

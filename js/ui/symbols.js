@@ -2,6 +2,8 @@
 // Varje symbol ritas i en 100×100-ruta. Gradient-id:n görs unika per anrop
 // så att samma symbol kan visas många gånger på sidan.
 
+import { adventureShapes } from "./symbols-adventure.js";
+
 let uid = 0;
 const id = (name) => `${name}-${++uid}`;
 
@@ -253,6 +255,8 @@ for (const [name, [light, mid, dark]] of Object.entries(GEMS)) {
       <path d="M40 32h16" stroke="#fff" stroke-width="4" stroke-linecap="round" opacity=".8"/>`;
   };
 }
+
+Object.assign(shapes, adventureShapes(id, lin));
 
 export const SYMBOLS = Object.keys(shapes);
 

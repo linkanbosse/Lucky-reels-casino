@@ -172,12 +172,47 @@ export const account = {
 
   async leaderboard(order = "balance", limit = 10) {
     const sb = await getClient();
-    const { data, error } = await sb
-      .from("profiles")
-      .select("id, username, balance, biggest_win")
-      .order(order, { ascending: false })
-      .limit(limit);
+    const query = (hideBanned) => {
+      let q = sb.from("profiles").select("*").order(order, { ascending: false }).limit(limit);
+      if (hideBanned) q = q.eq("banned", false);
+      return q;
+    };
+    let { data, error } = await query(true);
+    // Äldre databas utan kolumnen "banned": hämta utan filter
+    if (error && /banned/.test(error.message)) ({ data, error } = await query(false));
     if (error) throw error;
     return data;
+  },
+
+  /** Pågående och nyligen avslutade turneringar med deltagare (bäst först). */
+  async tournaments() {
+    const sb = await getClient();
+    const since = new Date(Date.now() - 3 * 864e5).toISOString();
+    const { data: list, error } = await sb.from("tournaments").select("*").gt("ends_at", since).order("ends_at", { ascending: true });
+    if (error) throw error;
+    if (!list.length) return [];
+    const { data: entries, error: e2 } = await sb
+      .from("tournament_entries")
+      .select("tournament_id, user_id, score, spins, prize, joined_at, profiles(username, level)")
+      .in("tournament_id", list.map((t) => t.id))
+      .order("score", { ascending: false })
+      .limit(1000);
+    if (e2) throw e2;
+    for (const t of list) t.entries = entries.filter((e) => e.tournament_id === t.id);
+    return list;
+  },
+
+  /** Delar ut priser i turneringar som tagit slut (säkert att anropa ofta). */
+  async settleTournaments() {
+    const sb = await getClient();
+    await sb.rpc("settle_tournaments");
+  },
+
+  /** Läser en inställning (t.ex. "announcement") från databasen, eller null. */
+  async setting(key) {
+    const sb = await getClient();
+    const { data, error } = await sb.from("settings").select("value").eq("key", key).maybeSingle();
+    if (error) return null;
+    return data?.value ?? null;
   },
 };

@@ -818,3 +818,311 @@
   background: radial-gradient(circle, rgba(255, 211, 107, 0.3), transparent 70%);
   box-shadow: inset 0 0 0 2px rgba(255, 211, 107, 0.7);
 }
+
+/* ---------- Stämning: miljösilhuett och partiklar ---------- */
+.scene,
+.ambient {
+  position: fixed;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.scene {
+  inset: auto 0 0;
+  height: 42vh;
+  color: color-mix(in srgb, var(--g-glow) 22%, #000);
+  opacity: 0.9;
+}
+
+.scene svg {
+  width: 100%;
+  height: 100%;
+}
+
+.ambient {
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.8;
+}
+
+.slot {
+  position: relative;
+  z-index: 1;
+}
+
+/* Tematiska hjul */
+[data-scene="western"] .reel-col {
+  background:
+    linear-gradient(180deg, rgba(60, 25, 5, 0.35), transparent 18%, transparent 82%, rgba(60, 25, 5, 0.35)),
+    linear-gradient(180deg, #f3dfb6, #fbf0d6 50%, #e9cf9c);
+}
+
+[data-scene="prison"] .reel-col {
+  background:
+    linear-gradient(180deg, rgba(2, 6, 23, 0.35), transparent 18%, transparent 82%, rgba(2, 6, 23, 0.35)),
+    linear-gradient(180deg, #dfe5ee, #f4f6fa 50%, #cfd8e3);
+}
+
+[data-scene="rail"] .reel-col {
+  background:
+    linear-gradient(180deg, rgba(50, 15, 5, 0.35), transparent 18%, transparent 82%, rgba(50, 15, 5, 0.35)),
+    linear-gradient(180deg, #f6e3cf, #fdf3e7 50%, #ecd2b6);
+}
+
+[data-scene="western"] .frame { background: linear-gradient(180deg, #3b1d08, #170a02); }
+[data-scene="prison"] .frame { background: linear-gradient(180deg, #1e293b, #0b1220); }
+[data-scene="prison"] .frame::before { background: linear-gradient(135deg, #e2e8f0, #64748b, #f8fafc, #475569); }
+[data-scene="rail"] .frame { background: linear-gradient(180deg, #3a1006, #160602); }
+
+/* Bonusnivåer: ramen glöder starkare ju högre nivå */
+[data-bonus-level="1"] .frame { box-shadow: 0 24px 60px rgba(0, 0, 0, 0.65), 0 0 60px color-mix(in srgb, #f97316 60%, transparent); }
+[data-bonus-level="2"] .frame { box-shadow: 0 24px 60px rgba(0, 0, 0, 0.65), 0 0 80px color-mix(in srgb, #ef4444 70%, transparent); }
+
+/* Storvinst: skak och blixt */
+.frame.is-quaking {
+  animation: quake 0.9s cubic-bezier(.36, .07, .19, .97);
+}
+
+.frame.is-quaking::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 24px;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.55), transparent 70%);
+  animation: flash 0.6s ease-out forwards;
+  pointer-events: none;
+}
+
+@keyframes quake {
+  10%, 90% { transform: translate(-1px, 1px); }
+  20%, 80% { transform: translate(3px, -2px); }
+  30%, 50%, 70% { transform: translate(-5px, 2px) rotate(-0.4deg); }
+  40%, 60% { transform: translate(5px, -1px) rotate(0.4deg); }
+}
+
+@keyframes flash {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+.reels.is-shaking {
+  animation: quake 0.35s linear;
+}
+
+/* Vinnande rutor: ljusstrimma som sveper över */
+.cell.is-win::after {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  border-radius: 10px;
+  background: linear-gradient(115deg, transparent 30%, rgba(255, 255, 255, 0.65) 50%, transparent 70%) -150% 0 / 250% 100% no-repeat;
+  animation: sheen 1.4s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes sheen {
+  60%, 100% { background-position: 150% 0; }
+}
+
+/* ---------- Ways, mysterieboxar och explosioner ---------- */
+.ways-pill {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 6px 16px;
+  border-radius: var(--r-pill);
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.3));
+  border: 1px solid color-mix(in srgb, var(--g-glow) 60%, transparent);
+  box-shadow: 0 0 18px color-mix(in srgb, var(--g-glow) 35%, transparent);
+  font-variant-numeric: tabular-nums;
+}
+
+.ways-pill b {
+  font-size: 1.05rem;
+  font-weight: 900;
+  color: var(--gold-1);
+}
+
+.ways-pill span {
+  font-size: 0.6875rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  color: var(--text-dim);
+}
+
+.cell.is-flipping svg {
+  animation: flip-out 0.2s ease-in forwards;
+}
+
+.cell.is-revealed svg {
+  animation: flip-in 0.35s var(--ease-spring);
+}
+
+@keyframes flip-out {
+  to { transform: rotateY(90deg) scale(1.1); filter: brightness(2); }
+}
+
+@keyframes flip-in {
+  from { transform: rotateY(-90deg) scale(1.1); filter: brightness(2) drop-shadow(0 0 10px #fff); }
+}
+
+.cell.is-exploding svg {
+  animation: explode 0.32s ease-out;
+}
+
+@keyframes explode {
+  50% { transform: scale(1.45); filter: brightness(2.2) drop-shadow(0 0 16px #fb923c); }
+}
+
+.cell__label--ways {
+  background: #1e3a8a;
+  border-color: #93c5fd;
+  color: #fff;
+}
+
+.cell__label--mult {
+  top: 6%;
+  bottom: auto;
+  background: #7f1d1d;
+  border-color: #fca5a5;
+  color: #fff;
+}
+
+/* Hold & Win-specialare */
+.cell__label--collector { background: #7f1d1d; border-color: #fca5a5; color: #fff; }
+.cell__label--payer { background: #14532d; border-color: #86efac; color: #fff; }
+.cell__label--sniper { background: #1e3a8a; border-color: #93c5fd; color: #fff; }
+.cell__label--pcollector,
+.cell__label--ppayer { background: #581c87; border-color: #f0abfc; color: #fff; }
+
+.cell[data-sym="collector"] .cell__label,
+.cell[data-sym="payer"] .cell__label,
+.cell[data-sym="sniper"] .cell__label,
+.cell[data-sym="pcollector"] .cell__label,
+.cell[data-sym="ppayer"] .cell__label {
+  bottom: 30%;
+}
+
+.cell.is-acting svg {
+  animation: explode 0.6s ease-in-out infinite;
+}
+
+.cell.is-boosted::before,
+.cell.is-collected::before {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  border-radius: 10px;
+  box-shadow: inset 0 0 0 3px #4ade80, 0 0 16px #4ade80;
+}
+
+.cell.is-collected::before {
+  box-shadow: inset 0 0 0 3px #f87171, 0 0 16px #f87171;
+}
+
+.cell.is-bumped .cell__label {
+  animation: bump 0.5s var(--ease-spring);
+}
+
+@keyframes bump {
+  40% { transform: translateX(-50%) scale(1.5); }
+}
+
+/* ---------- Bonusköp ---------- */
+.buy-menu {
+  display: grid;
+  gap: var(--sp-3);
+}
+
+.buy-menu h2 {
+  font-family: var(--font-display);
+  font-size: var(--fs-xl);
+  padding-right: 48px;
+}
+
+.buy-menu p {
+  color: var(--text-dim);
+  font-size: var(--fs-sm);
+}
+
+.buy-option {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 2px var(--sp-3);
+  align-items: center;
+  padding: var(--sp-3) var(--sp-4);
+  border-radius: var(--r-md);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.02));
+  border: 1px solid var(--border-strong);
+  text-align: left;
+  transition: transform var(--t-fast), border-color var(--t-fast);
+}
+
+.buy-option:not(:disabled):active {
+  transform: scale(0.98);
+}
+
+.buy-option:not(:disabled):hover {
+  border-color: var(--gold-2);
+}
+
+.buy-option:disabled {
+  opacity: 0.45;
+}
+
+.buy-option__name {
+  font-weight: 900;
+  font-size: var(--fs-md, 1rem);
+}
+
+.buy-option__desc {
+  grid-column: 1;
+  color: var(--text-dim);
+  font-size: var(--fs-xs);
+}
+
+.buy-option__price {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  display: grid;
+  justify-items: end;
+  font-weight: 900;
+  color: var(--gold-1);
+  font-variant-numeric: tabular-nums;
+}
+
+.buy-option__price .icon {
+  display: none;
+}
+
+.buy-option__price small {
+  color: var(--text-dim);
+  font-weight: 600;
+  font-size: 0.6875rem;
+}
+
+.buy-menu__note {
+  font-size: var(--fs-xs) !important;
+}
+
+.paytable .levels {
+  display: grid;
+  gap: 6px;
+  margin: 0 0 var(--sp-3);
+  padding-left: 1.1em;
+  color: var(--text-dim);
+  font-size: var(--fs-sm);
+}
+
+.in-hold-win[data-scene] .reel-col {
+  background: linear-gradient(180deg, #1a1206, #0d0903);
+}
+
+.slot-xp {
+  position: relative;
+  z-index: 1;
+  width: calc(100% - 2 * var(--gutter));
+  max-width: 520px;
+  margin: 8px auto 0;
+}

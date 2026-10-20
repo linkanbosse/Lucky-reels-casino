@@ -48,7 +48,9 @@ supabase/schema.sql     Databasen: profiler, saldo, daglig bonus, säkra funktio
 2. ✅ Gemensam slotmotor + Golden Sevens, Diamond Rush, Royal Crown
 3. ✅ Avancerade slots: Cherry Blast (kluster), Moonlight Magic (kaskader), Pharaoh's Gold (Hold & Win)
 4. ✅ Inloggning, sparat saldo och topplistor med Supabase
-5. Bordsspel (blackjack, roulette) och resterande slots
+5. ✅ Bonusäventyr: Ghost Gulch (sticky exploderande wilds), Iron Lockdown (mystery-multiplikator), Steam Express (Hold & Win med specialsymboler), bonusköp
+6. ✅ XP och nivåer, turneringar, adminpanel (`/admin/`), "titta på bilden"-belöning, Bjud på kaffe (Swish)
+7. Bordsspel (blackjack, roulette) och resterande slots
 
 ## Lägga till en slot
 
@@ -88,7 +90,22 @@ Engångsinställning i Supabase-projektet:
 2. **Authentication → URL Configuration**: sätt **Site URL** till `https://linkanbosse.github.io/Lucky-reels-casino/`
    och lägg till samma adress under **Redirect URLs**.
 
-Saldot ändras bara via databasfunktionerna `apply_round`, `claim_daily` och `refill`, som kontrollerar inloggning,
-insatsgräns (max 1 000) och att saldot räcker. Spelresultaten räknas fortfarande ut i webbläsaren, så en tekniskt
+Saldot ändras bara via databasfunktionerna (`play_round`, `claim_daily`, `refill`, `claim_watch_reward` m.fl.), som
+kontrollerar inloggning, avstängning, insatsgräns och att saldot räcker. Spelresultaten räknas fortfarande ut i webbläsaren, så en tekniskt
 kunnig spelare skulle kunna fuska till sig mynt inom gränserna. För låtsaspengar är det en rimlig avvägning;
 helt fusksäkert kräver att snurren räknas ut på servern (t.ex. med en Supabase Edge Function).
+
+### Göra någon till admin
+
+Kör i **SQL Editor** (byt namnet mot rätt användarnamn):
+
+```sql
+update public.profiles set is_admin = true where username = 'Användarnamn';
+```
+
+Adminpanelen ligger på `/admin/` och visar statistik, spelare (saldo, avstängning, adminrätt), turneringar och
+ett meddelande som visas överst i lobbyn. Alla adminfunktioner kontrolleras i databasen, inte bara i webbläsaren.
+
+### Belöningsbilder
+
+Bilderna som visas i 20 sekunder ligger i `assets/watch/` och listas i `WATCH_IMAGES` i `js/config.js`.

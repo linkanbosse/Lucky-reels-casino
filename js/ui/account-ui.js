@@ -4,6 +4,7 @@ import { account, friendlyError } from "../lib/account.js";
 import { wallet, formatCoins } from "../lib/wallet.js";
 import { icons } from "./icons.js";
 import { openModal, closeModal, toast } from "./feedback.js";
+import { progress, titleFor } from "../lib/levels.js";
 
 const $ = (sel, root = document) => root.querySelector(sel);
 const escapeHtml = (s) =>
@@ -134,11 +135,16 @@ function showMessage(title, html) {
 function openProfile() {
   const p = account.profile;
   const s = wallet.stats;
+  const lv = progress(s.xp);
   const content = openModal(
     `<div class="auth">
       <div class="profile-head">
         <span class="profile-avatar">${escapeHtml(p.username.slice(0, 1).toUpperCase())}</span>
         <div><h2 class="auth__title">${escapeHtml(p.username)}</h2><p class="form__intro">${escapeHtml(account.user.email ?? "")}</p></div>
+      </div>
+      <div class="profile-level">
+        <div class="profile-level__row">Nivå ${lv.level} – ${titleFor(lv.level)}<span>${formatCoins(lv.into)} / ${formatCoins(lv.needed)} XP</span></div>
+        <div class="xp-bar"><span class="xp-bar__fill" style="width:${lv.pct}%"></span></div>
       </div>
       <dl class="profile-stats">
         <div><dt>Saldo</dt><dd>${formatCoins(wallet.balance)}</dd></div>
@@ -147,6 +153,7 @@ function openProfile() {
         <div><dt>Totalt vunnet</dt><dd>${formatCoins(s.totalWon)}</dd></div>
       </dl>
       <p class="form__intro">Ditt saldo sparas i molnet och följer med till alla enheter där du loggar in.</p>
+      ${p.is_admin ? `<a class="btn btn--royal" href="admin/" style="width:100%;margin-top:12px">${icons.shield}Adminpanel</a>` : ""}
       <div class="profile-actions">
         ${wallet.canRefill() ? `<button class="btn btn--gold" type="button" data-refill>Fyll på mynt</button>` : ""}
         <button class="btn btn--ghost" type="button" data-logout ${wallet.canRefill() ? "" : 'style="grid-column:1/-1"'}>Logga ut</button>

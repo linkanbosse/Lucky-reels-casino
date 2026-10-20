@@ -612,3 +612,224 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+/* ---------- Meddelande från admin ---------- */
+.announce {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin-top: var(--sp-3);
+  padding: var(--sp-3) var(--sp-4);
+  border-radius: var(--r-md);
+  background: linear-gradient(90deg, rgba(139, 92, 246, 0.3), rgba(236, 72, 153, 0.2));
+  border: 1px solid rgba(196, 181, 253, 0.4);
+  font-weight: 600;
+  font-size: var(--fs-sm);
+}
+
+.announce[hidden] {
+  display: none;
+}
+
+.announce .icon {
+  flex: none;
+  color: var(--gold-2);
+}
+
+/* ---------- Turneringar ---------- */
+.tours {
+  display: grid;
+  gap: var(--sp-3);
+}
+
+@media (min-width: 760px) {
+  .tours { grid-template-columns: repeat(2, 1fr); }
+}
+
+.tour {
+  display: grid;
+  gap: var(--sp-3);
+  padding: var(--sp-4);
+  border-radius: var(--r-lg);
+  background:
+    radial-gradient(120% 80% at 100% 0%, rgba(250, 204, 21, 0.14), transparent 60%),
+    var(--surface);
+  border: 1px solid var(--border-strong);
+  box-shadow: var(--shadow-1, 0 8px 24px rgba(0, 0, 0, 0.35));
+}
+
+.tour--ended {
+  opacity: 0.8;
+  background: var(--surface);
+}
+
+.tour__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--sp-3);
+}
+
+.tour__name {
+  font-family: var(--font-display);
+  font-size: var(--fs-lg);
+  font-weight: 900;
+  line-height: 1.2;
+}
+
+.tour__meta {
+  color: var(--text-dim);
+  font-size: var(--fs-xs);
+  margin-top: 2px;
+}
+
+.tour__time {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+  padding: 4px 10px;
+  border-radius: var(--r-pill);
+  background: rgba(0, 0, 0, 0.35);
+  font-size: var(--fs-xs);
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.tour__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #4ade80;
+  box-shadow: 0 0 8px #4ade80;
+  animation: pulse 1.6s ease-in-out infinite;
+}
+
+.tour__pool {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.tour__pool .icon {
+  width: 26px;
+  height: 26px;
+}
+
+.tour__pool b {
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: var(--gold-1);
+  font-variant-numeric: tabular-nums;
+}
+
+.tour__pool span {
+  color: var(--text-dim);
+  font-size: var(--fs-xs);
+}
+
+.tour__prizes,
+.tour__top {
+  margin: 0;
+}
+
+.tour__prizes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  list-style: none;
+  padding: 0;
+}
+
+.tour__prizes li {
+  padding: 3px 10px;
+  border-radius: var(--r-pill);
+  background: rgba(255, 255, 255, 0.06);
+  font-size: var(--fs-xs);
+  font-variant-numeric: tabular-nums;
+}
+
+.tour__top {
+  display: grid;
+  gap: 4px;
+  list-style: none;
+  padding: 0;
+}
+
+.tour__top li {
+  display: grid;
+  grid-template-columns: 26px 1fr auto auto;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: 6px 8px;
+  border-radius: var(--r-sm, 8px);
+  background: rgba(255, 255, 255, 0.03);
+  font-size: var(--fs-sm);
+}
+
+.tour__top li.is-me {
+  background: rgba(250, 204, 21, 0.12);
+  box-shadow: inset 0 0 0 1px rgba(250, 204, 21, 0.4);
+}
+
+.tour__top .tour__empty {
+  display: block;
+  color: var(--text-dim);
+  text-align: center;
+}
+
+.tour__rank {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--surface-2);
+  font-weight: 900;
+  font-size: 0.75rem;
+}
+
+.tour__top li:nth-child(1) .tour__rank { background: var(--grad-gold); color: #2b1700; }
+.tour__top li:nth-child(2) .tour__rank { background: linear-gradient(135deg, #f1f5f9, #94a3b8); color: #1e293b; }
+.tour__top li:nth-child(3) .tour__rank { background: linear-gradient(135deg, #fdba74, #9a3412); color: #2a0e02; }
+
+.tour__player {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+}
+
+.tour__top b {
+  color: var(--gold-2);
+  font-variant-numeric: tabular-nums;
+}
+
+.tour__top em {
+  font-style: normal;
+  color: #4ade80;
+  font-size: var(--fs-xs);
+  font-weight: 800;
+}
+
+.tour__mine {
+  color: var(--text-dim);
+  font-size: var(--fs-sm);
+}
+
+.tour__won {
+  color: #4ade80;
+  font-weight: 900;
+  align-self: center;
+}
+
+.tour__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+
+.tour__actions .btn {
+  flex: 1 1 auto;
+}

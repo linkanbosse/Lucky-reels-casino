@@ -28,8 +28,10 @@
       </a>
       <nav class="header__nav" aria-label="Huvudmeny">
         <a href="#lobby" aria-current="page">Spel</a>
+        <a href="#tournaments">Turneringar</a>
         <a href="#leaderboard">Topplista</a>
       </nav>
+      <span data-level-badge></span>
       <div class="balance" title="Ditt saldo (låtsasmynt)">
         <span data-coin="balance__coin"></span>
         <span data-balance>0</span>
@@ -40,6 +42,8 @@
   </header>
 
   <main class="container">
+    <div class="announce" id="announce" hidden></div>
+
     <section class="hero" aria-labelledby="hero-title">
       <div class="hero__inner">
         <div>
@@ -49,6 +53,7 @@
           <div class="hero__actions">
             <button class="btn btn--gold" type="button" data-play-now data-icon="play">Börja spela</button>
             <button class="btn btn--ghost" type="button" data-bonus data-icon="gift"><span data-bonus-label>Daglig bonus</span></button>
+            <button class="btn btn--ghost" type="button" data-watch data-icon="tv">Titta &amp; få 250</button>
           </div>
         </div>
         <div class="machine" role="button" tabindex="0" aria-label="Snurra demoautomaten">
@@ -85,6 +90,13 @@
       <div class="grid" id="game-grid" style="margin-top:16px"></div>
     </section>
 
+    <section class="section" id="tournaments" aria-labelledby="tour-title">
+      <div class="section__head">
+        <h2 class="section__title" id="tour-title">Turneringar</h2>
+      </div>
+      <div class="tours" id="tours"><p class="leaders__note">Laddar turneringar…</p></div>
+    </section>
+
     <section class="section" id="leaderboard" aria-labelledby="lb-title">
       <div class="section__head">
         <h2 class="section__title" id="lb-title">Topplista</h2>
@@ -102,12 +114,13 @@
       <p><strong>Lucky Reels</strong> är ett underhållningscasino med låtsasmynt.</p>
       <p>Mynten har inget värde, kan inte köpas och kan inte tas ut. Inga riktiga pengar används.</p>
       <p>Spelar du om riktiga pengar och vill ha stöd: <a href="https://www.stodlinjen.se" target="_blank" rel="noopener">Stödlinjen.se</a></p>
+      <p><button class="btn btn--ghost coffee-btn" type="button" data-coffee data-icon="coffee">Bjud mig på kaffe</button></p>
     </div>
   </footer>
 
   <nav class="bottom-nav" aria-label="Mobilmeny">
     <a href="#lobby" aria-current="page" data-icon="reels">Spel</a>
-    <a href="#leaderboard" data-icon="trophy">Topplista</a>
+    <a href="#tournaments" data-icon="trophy">Tävla</a>
     <button type="button" data-bonus data-icon="gift">Bonus</button>
     <button type="button" data-login data-icon="user"><span data-login-label>Logga in</span></button>
   </nav>

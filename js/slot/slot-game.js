@@ -6,7 +6,10 @@
 // Motorn (engine.js) räknar ut hela rundan i förväg. Den här filen spelar upp
 // den: hjulsnurr → vinster per steg (kaskader) → bomber → scatter → bonusar.
 
-import { prepare, playRound, drawCell, baseId, cellValue, coinWorth } from "./engine.js";
+import { prepare, playRound, drawCell, baseId, cellValue, coinWorth, waysCount, bonusState, buyHoldWin, HOLD_SPECIALS } from "./engine.js";
+import { mountAmbient } from "./ambient.js";
+import { mountXpBar, celebrateLevelUps } from "../ui/level-ui.js";
+import { openWatch } from "../ui/watch.js";
 import { sfx } from "./audio.js";
 import { coinShower } from "./coins.js";
 import { wallet, formatCoins } from "../lib/wallet.js";
@@ -20,7 +23,10 @@ export const SYMBOL_NAMES = {
   bell: "Klocka", bar: "BAR", wild: "WILD", ten: "Tia", jack: "Knekt", queen: "Dam", king: "Kung", ace: "Ess",
   ruby: "Rubin", emerald: "Smaragd", sapphire: "Safir", amethyst: "Ametist", diamond: "Diamant", crown: "Krona",
   star: "Stjärna", clover: "Klöver", moon: "Måne", bomb: "Bomb", coin: "Guldmynt", ankh: "Ankh", eye: "Horus öga",
-  scarab: "Skarabé", pyramid: "Pyramid",
+  scarab: "Skarabé", pyramid: "Pyramid", horseshoe: "Hästsko", boot: "Stövel", hat: "Hatt", sheriff: "Sheriffstjärna",
+  dynamite: "Dynamit", skull: "Dödskalle", lamp: "Strålkastare", lock: "Hänglås", cuffs: "Handbojor", key: "Nyckel",
+  mystery: "Mysteriebox", siren: "Siren", lantern: "Lykta", watch: "Fickur", bag: "Pengasäck", train: "Ånglok",
+  collector: "Collector", payer: "Payer", sniper: "Sniper", pcollector: "Gyllene Collector", ppayer: "Gyllene Payer",
 };
 
 const JACKPOT_NAMES = { mini: "MINI", minor: "MINOR", major: "MAJOR", grand: "GRAND" };
@@ -42,6 +48,8 @@ export function mountSlot(config) {
   const id = config.id;
   const maxBet = config.bets[config.bets.length - 1];
   const hw = config.holdWin;
+  const ways = config.mode === "ways";
+  const isHoldCell = (c) => hw && (baseId(c) === hw.coin || HOLD_SPECIALS.includes(baseId(c)));
 
   /* ---------- Tillstånd ---------- */
   const savedBet = load(`slot:${id}:bet`, 0);
@@ -68,6 +76,7 @@ export function mountSlot(config) {
   document.body.style.setProperty("--g-from", config.theme.from);
   document.body.style.setProperty("--g-to", config.theme.to);
   document.body.style.setProperty("--g-glow", config.theme.glow);
+  if (config.theme.scene) document.body.dataset.scene = config.theme.scene;
 
   const cols = Array.from({ length: config.reels }, (_, r) => `<div class="reel-col" data-reel="${r}"><div class="strip"></div></div>`).join("");
 
@@ -75,7 +84,8 @@ export function mountSlot(config) {
   if (config.jackpot) {
     marquee.push(`<div class="jackpot"><span class="jackpot__label">JACKPOTT</span>${coinSvg("icon")}<span class="jackpot__value" data-jackpot></span></div>`);
   }
-  if (hw) {
+  if (ways) marquee.push(`<div class="ways-pill"><b data-ways></b><span>VÄGAR</span></div>`);
+  if (hw?.jackpots) {
     marquee.push(
       `<div class="jp-ladder">${Object.keys(hw.jackpots)
         .map((k) => `<div class="jp jp--${k}"><span>${JACKPOT_NAMES[k]}</span><b data-jp="${k}"></b></div>`)
@@ -91,6 +101,7 @@ export function mountSlot(config) {
       <h1 class="slot-top__title text-gold">${config.name}</h1>
       <div class="balance" title="Ditt saldo">${coinSvg("balance__coin")}<span data-balance></span></div>
     </header>
+    <div class="slot-xp" data-xp></div>
     <main class="slot">
       <div class="slot__marquee">${marquee.join("")}</div>
       <div class="frame">
@@ -117,10 +128,15 @@ export function mountSlot(config) {
       </div>
       <div class="toolbar-mini">
         <button class="btn btn--ghost" type="button" data-paytable>${icons.info}Vinsttabell</button>
+        ${config.bonusBuy ? `<button class="btn btn--ghost" type="button" data-buy>${icons.cart}Köp bonus</button>` : ""}
         <button class="btn btn--ghost" type="button" data-sound aria-pressed="${st.sound}"></button>
       </div>
     </main>
     <div class="toasts" aria-live="polite"></div>`;
+  mountAmbient(config.theme);
+  wallet.setGame(id);
+  mountXpBar($("[data-xp]"));
+  celebrateLevelUps(() => $("[data-xp]"));
 
   const reelsEl = $(".reels");
   const colEls = [...document.querySelectorAll(".reel-col")];
@@ -137,7 +153,7 @@ export function mountSlot(config) {
   let cellH = 72;
   function layout() {
     const landscape = innerWidth > innerHeight && innerHeight < 520;
-    const chrome = landscape ? 56 + 60 : 56 + 40 + 56 + 92 + 36 + 5 * 12 + 40;
+    const chrome = landscape ? 56 + 60 : 56 + 22 + 40 + 56 + 92 + 36 + 5 * 12 + 40;
     const availH = innerHeight - chrome - 28;
     const gutter = 2 * Math.max(16, Math.min(32, innerWidth * 0.04));
     const availW = (landscape ? innerWidth - 360 : Math.min(innerWidth, 760)) - gutter - 28;
@@ -153,21 +169,32 @@ export function mountSlot(config) {
   layout();
 
   /* ---------- Rendering ---------- */
+  // Etikett på rutan och dess färgvariant: [text, klass]
   function labelFor(cell) {
     const v = cellValue(cell);
-    if (v === null) return "";
+    if (v === null) return ["", ""];
     const base = baseId(cell);
-    if (config.bombs && base === config.bombs.id) return `×${v}`;
-    if (hw && base === hw.coin) return typeof v === "number" ? formatCoins(v * currentBet()) : JACKPOT_NAMES[v] ?? v;
-    return String(v);
+    if (config.mystery && base === config.mystery.id) return ["", ""];
+    if (typeof v === "string" && /^x\d+$/.test(v)) return [`${v.slice(1)}×`, " cell__label--ways"];
+    if (typeof v === "string" && /^m\d+$/.test(v)) return [`×${v.slice(1)}`, " cell__label--mult"];
+    if (config.bombs && base === config.bombs.id) return [`×${v}`, ""];
+    if (isHoldCell(cell)) {
+      if (typeof v === "number") return [formatCoins(v * currentBet()), HOLD_SPECIALS.includes(base) ? ` cell__label--${base}` : ""];
+      return [JACKPOT_NAMES[v] ?? v, ` cell__label--${v}`];
+    }
+    return [String(v), ""];
   }
 
-  function cellHtml(cell, r, row) {
-    const label = labelFor(cell);
-    const jp = hw && baseId(cell) === hw.coin && typeof cellValue(cell) === "string" ? ` cell__label--${cellValue(cell)}` : "";
-    return `<div class="cell"${r !== undefined ? ` data-pos="${r}-${row}"` : ""} data-sym="${baseId(cell)}">${symbolSvg(baseId(cell))}${
-      label ? `<span class="cell__label${jp}">${label}</span>` : ""
+  function cellHtml(cell, r, row, extra = "") {
+    const [label, variant] = labelFor(cell);
+    return `<div class="cell${extra ? ` ${extra}` : ""}"${r !== undefined ? ` data-pos="${r}-${row}"` : ""} data-sym="${baseId(cell)}">${symbolSvg(baseId(cell))}${
+      label ? `<span class="cell__label${variant}">${label}</span>` : ""
     }</div>`;
+  }
+
+  function renderWays(grid) {
+    const el = $("[data-ways]");
+    if (el) el.textContent = formatCoins(waysCount(grid));
   }
 
   function renderGrid(grid) {
@@ -189,7 +216,7 @@ export function mountSlot(config) {
     const locked = st.spinning || st.auto > 0 || !!st.fs;
     $('[data-bet="-1"]').disabled = locked || i <= 0;
     $('[data-bet="1"]').disabled = locked || i >= config.bets.length - 1;
-    if (hw) {
+    if (hw?.jackpots) {
       for (const [k, mult] of Object.entries(hw.jackpots)) $(`[data-jp="${k}"]`).textContent = formatCoins(mult * currentBet());
     }
   }
@@ -214,9 +241,12 @@ export function mountSlot(config) {
     autoBtn.disabled = !!st.fs;
     $("[data-spin-count]").textContent = st.fs ? `${st.fs.left}` : "";
     if (st.fs) {
-      const mult = config.freeSpinMultiplier ?? 1;
-      $("[data-fs-text]").textContent = `FREE SPINS ${st.fs.total - st.fs.left}/${st.fs.total}${mult > 1 ? ` ×${mult}` : ""}`;
+      const level = st.fs.level >= 0 && config.bonus ? config.bonus.levels[st.fs.level] : null;
+      const mult = st.fs.state?.multiplier ?? config.freeSpinMultiplier ?? 1;
+      $("[data-fs-text]").textContent = `${level ? level.name.toUpperCase() : "FREE SPINS"} ${st.fs.total - st.fs.left}/${st.fs.total}${mult > 1 ? ` · ×${mult}` : ""}`;
     }
+    const buy = $("[data-buy]");
+    if (buy) buy.disabled = st.spinning || !!st.fs || st.auto > 0;
     const soundBtn = $("[data-sound]");
     soundBtn.innerHTML = `${st.sound ? icons.sound : icons.mute}${st.sound ? "Ljud på" : "Ljud av"}`;
     soundBtn.setAttribute("aria-pressed", String(st.sound));
@@ -259,7 +289,11 @@ export function mountSlot(config) {
 
   function describeWin(w, multiplier = 1) {
     const name = SYMBOL_NAMES[w.symbol] ?? w.symbol;
-    const where = w.cluster ? `Kluster ${w.count}× ${name}` : `Linje ${w.line + 1} · ${w.count}× ${name}`;
+    const where = w.cluster
+      ? `Kluster ${w.count}× ${name}`
+      : w.way
+        ? `${w.count} hjul ${name} · ${formatCoins(w.ways)} ${w.ways === 1 ? "väg" : "vägar"}${w.multiplier > 1 ? ` · wild ×${w.multiplier.toFixed(w.multiplier % 1 ? 1 : 0)}` : ""}`
+        : `Linje ${w.line + 1} · ${w.count}× ${name}`;
     const extra = w.wildBoost ? ` · WILD ×${config.wildMultiplier}` : "";
     const mult = multiplier > 1 ? ` · ×${multiplier}` : "";
     return `${where}${extra}${mult} · ${formatCoins(w.amount * multiplier)}`;
@@ -319,6 +353,15 @@ export function mountSlot(config) {
     });
   }
 
+  // Ramen skakar och blixtrar vid storvinster
+  function quake() {
+    const frame = $(".frame");
+    frame.classList.remove("is-quaking");
+    void frame.offsetWidth;
+    frame.classList.add("is-quaking");
+    setTimeout(() => frame.classList.remove("is-quaking"), 900);
+  }
+
   /* ---------- Hjulanimation ---------- */
   function animateReels(grid, free) {
     const turbo = st.turbo;
@@ -376,7 +419,8 @@ export function mountSlot(config) {
           strip.innerHTML = grid[r].map((s, row) => cellHtml(s, r, row)).join("");
           sfx.reelStop(r);
           grid[r].forEach((s, row) => {
-            const special = s === scatterId || (hw && baseId(s) === hw.coin) || (config.bombs && baseId(s) === config.bombs.id);
+            const special =
+              s === scatterId || isHoldCell(s) || (config.bombs && baseId(s) === config.bombs.id) || (config.mystery && baseId(s) === config.mystery.id);
             if (special) {
               if (s === scatterId) scattersLanded++;
               sfx.scatter(Math.min(4, scattersLanded));
@@ -409,6 +453,63 @@ export function mountSlot(config) {
     }
     msgEl.textContent = round.expanded.length > 1 ? `${round.expanded.length} expanderande wilds!` : "Expanderande wild!";
     await wait(st.turbo ? 150 : 400);
+  }
+
+  // Mysterieboxarna vänds en i taget och visar samma symbol (med antal kopior)
+  async function showMystery(round, grid) {
+    if (!round.mystery) return;
+    msgEl.textContent = `${round.mystery.positions.length} mysterieboxar…`;
+    await wait(st.turbo ? 120 : 380);
+    for (const [r, row] of round.mystery.positions) {
+      const el = cellEl(r, row);
+      if (!el) continue;
+      el.classList.add("is-flipping");
+      sfx.scatter(2);
+      await wait(st.turbo ? 90 : 200);
+      el.outerHTML = cellHtml(grid[r][row], r, row, "is-revealed");
+      await wait(st.turbo ? 40 : 110);
+    }
+    renderWays(grid);
+    const n = grid.flat().reduce((sum, c) => sum + (cellValue(c) && /^x/.test(cellValue(c)) ? 1 : 0), 0);
+    msgEl.textContent = `Mysterieboxar blev ${SYMBOL_NAMES[round.mystery.symbol] ?? round.mystery.symbol}${n ? " – fler vägar!" : ""}`;
+    await wait(st.turbo ? 150 : 450);
+  }
+
+  // Dynamit exploderar och gör grannrutorna till wilds
+  async function showExplosions(round, grid) {
+    if (!round.explosions?.length) return;
+    for (const ex of round.explosions) {
+      const [r, row] = ex.at;
+      cellEl(r, row)?.classList.add("is-exploding");
+      reelsEl.classList.add("is-shaking");
+      sfx.feature();
+      await wait(st.turbo ? 120 : 320);
+      reelsEl.classList.remove("is-shaking");
+      for (const [cr, crow] of ex.cells) {
+        const el = cellEl(cr, crow);
+        if (el) el.outerHTML = cellHtml(grid[cr][crow], cr, crow, "is-expanding");
+      }
+      cellEl(r, row)?.classList.remove("is-exploding");
+      await wait(st.turbo ? 60 : 160);
+    }
+    // Wildmultiplikatorer (bonusnivåer) syns först nu
+    grid.forEach((col, r) =>
+      col.forEach((c, row) => {
+        if (c.includes(":m")) {
+          const el = cellEl(r, row);
+          if (el && !el.querySelector(".cell__label")) el.outerHTML = cellHtml(c, r, row, el.className.replace("cell", "").trim());
+        }
+      }),
+    );
+    const n = round.explosions.reduce((sum, e) => sum + e.cells.length, 0);
+    if (n) msgEl.textContent = `BOOM! ${n} nya wilds`;
+    await wait(st.turbo ? 120 : 350);
+  }
+
+  // Klibbiga wilds markeras så att man ser att de sitter kvar
+  function markSticky(state) {
+    if (!state?.sticky) return;
+    for (const key of Object.keys(state.sticky)) cellEl(...key.split("-").map(Number))?.classList.add("is-held");
   }
 
   // Vinnande symboler sprängs, resten faller ner och nya ramlar in ovanifrån
@@ -509,6 +610,7 @@ export function mountSlot(config) {
     const ratio = baseTotal / bet;
     if (ratio >= BIG_WIN) {
       sfx.bigWin();
+      quake();
       const tier = ratio >= 100 ? ["EPISK", 3] : ratio >= 40 ? ["MEGA", 2] : ["STOR", 1];
       await showOverlay({ kicker: tier[0], title: "VINST", amount: baseTotal, autoClose: st.turbo ? 3000 : 4500, shower: tier[1] });
       if (st.auto > 0) {
@@ -534,11 +636,14 @@ export function mountSlot(config) {
   async function runHoldWin(round, bet) {
     const h = round.holdWin;
     const coinsAtStart = h.start.flat().filter(Boolean).length;
+    const title = hw.title ?? "HOLD & WIN";
     sfx.feature();
     await showOverlay({
-      kicker: `${coinsAtStart} GULDMYNT`,
-      title: "HOLD & WIN",
-      hint: `Mynten låses · ${hw.respins} respins · nya mynt återställer räknaren`,
+      kicker: `${coinsAtStart} ${hw.specials ? "MYNT" : "GULDMYNT"}`,
+      title,
+      hint: hw.specials
+        ? `${hw.respins} respins · Sniper, Payer och Collector slår ihop värdena`
+        : `Mynten låses · ${hw.respins} respins · nya mynt återställer räknaren`,
       autoClose: 3200,
       shower: 1,
     });
@@ -574,10 +679,35 @@ export function mountSlot(config) {
       banner.textContent = `RESPINS ${spin.left}`;
       if (spin.landed.length) msgEl.textContent = `+${spin.landed.length} mynt – respins återställda!`;
       await wait(st.turbo ? 200 : 450);
+
+      // Specialsymbolerna gör sitt: sniper → payer → collector, sedan de gyllene
+      for (const a of spin.actions ?? []) {
+        const src = cellEl(...a.at);
+        src?.classList.add("is-acting");
+        for (const t of a.targets) cellEl(...t)?.classList.add(a.type === "collector" ? "is-collected" : "is-boosted");
+        msgEl.textContent =
+          a.type === "sniper"
+            ? `Sniper dubblar ${a.targets.length} ${a.targets.length === 1 ? "värde" : "värden"}!`
+            : a.type === "payer"
+              ? `Payer ger +${formatCoins(a.amount * bet)} till ${a.targets.length} rutor!`
+              : `Collector samlar in ${formatCoins(a.amount * bet)}!`;
+        sfx.win(a.type === "collector" ? 3 : 2);
+        await wait(st.turbo ? 250 : 650);
+        a.board.forEach((col, r) =>
+          col.forEach((c, row) => {
+            if (!c || c === board[r][row]) return;
+            board[r][row] = c;
+            const el = cellEl(r, row);
+            if (el) el.outerHTML = cellHtml(c, r, row, "is-held is-bumped");
+          }),
+        );
+        reelsEl.querySelectorAll(".is-acting, .is-collected, .is-boosted").forEach((el) => el.classList.remove("is-acting", "is-collected", "is-boosted"));
+        await wait(st.turbo ? 120 : 300);
+      }
     }
 
     // Räkna ihop mynten ett i taget
-    msgEl.textContent = h.full ? "Hela brädet fyllt – GRAND JACKPOTT!" : "Mynten räknas…";
+    msgEl.textContent = h.full ? (hw.jackpots ? "Hela brädet fyllt – GRAND JACKPOTT!" : "Hela brädet fyllt – BONUS!") : "Mynten räknas…";
     let running = 0;
     winEl.classList.add("is-active");
     for (let r = 0; r < config.reels; r++) {
@@ -596,15 +726,16 @@ export function mountSlot(config) {
     }
     if (h.full) {
       const before = running;
-      running += hw.jackpots.grand * bet;
+      running += (hw.fullBonus ?? hw.jackpots?.grand ?? 0) * bet;
       await countUp(winEl, before, running, 800);
     }
+    if (running !== h.total) winEl.textContent = formatCoins(h.total); // maxvinst-taket
 
     wallet.credit(h.total, "win");
     document.body.classList.remove("in-hold-win");
     renderControls();
     await showOverlay({
-      kicker: h.full ? "GRAND JACKPOTT" : "HOLD & WIN",
+      kicker: h.full ? (hw.jackpots ? "GRAND JACKPOTT" : "FULLT BRÄDE") : title,
       title: "TOTALVINST",
       amount: h.total,
       autoClose: 4500,
@@ -653,10 +784,21 @@ export function mountSlot(config) {
     if (config.cascade) renderLadder(-1);
     sfx.click();
 
-    const round = playRound(config, { bet, free });
+    const round = playRound(config, { bet, free, state: free ? st.fs.state : null });
     await animateReels(round.initial, free);
     st.grid = round.initial;
+    if (ways) renderWays(round.initial);
     await showExpandedWilds(round);
+    const evaluated = round.steps[0].grid;
+    await showMystery(round, evaluated);
+    await showExplosions(round, evaluated);
+    if (free && round.state) {
+      st.fs.state = round.state;
+      save(`slot:${id}:fs`, st.fs);
+      markSticky(round.state);
+      renderControls();
+    }
+    if (ways) renderWays(evaluated);
     await presentRound(round, bet, free);
     st.grid = round.finalGrid;
 
@@ -684,6 +826,9 @@ export function mountSlot(config) {
         st.fs.left += awarded;
         st.fs.total += awarded;
         await showOverlay({ kicker: "RETRIGGER", title: `+${awarded} FREE SPINS`, autoClose: 2500 });
+      } else if (config.bonus && round.scatter.level >= 0) {
+        st.auto = 0;
+        await startBonus(round.scatter.level, bet, `${round.scatter.count} ${SYMBOL_NAMES[config.scatter.id].toUpperCase()}`);
       } else {
         st.fs = { left: awarded, total: awarded, win: 0, bet };
         st.auto = 0;
@@ -702,6 +847,7 @@ export function mountSlot(config) {
     if (st.fs && st.fs.left === 0) {
       const { win, total } = st.fs;
       st.fs = null;
+      delete document.body.dataset.bonusLevel;
       save(`slot:${id}:fs`, null);
       renderControls();
       if (config.cascade) renderLadder(-1);
@@ -725,6 +871,70 @@ export function mountSlot(config) {
       renderControls();
       if (st.auto > 0) st.timers.push(setTimeout(play, st.turbo ? 200 : 500));
     }
+  }
+
+  /* ---------- Bonusnivåer och bonusköp ---------- */
+  async function startBonus(level, bet, kicker) {
+    const l = config.bonus.levels[level];
+    st.fs = { left: l.spins, total: l.spins, win: 0, bet, level, state: bonusState(config, level) };
+    save(`slot:${id}:fs`, st.fs);
+    sfx.feature();
+    document.body.dataset.bonusLevel = String(level);
+    await showOverlay({ kicker, title: l.name.toUpperCase(), hint: `${l.desc} Tryck för att starta.`, autoClose: 4200, shower: level + 1 });
+    renderControls();
+  }
+
+  function openBuyMenu() {
+    if (st.spinning || st.fs) return;
+    const bet = st.bet;
+    const content = openModal(
+      `<div class="buy-menu">
+        <h2>Köp bonus</h2>
+        <p>Hoppa direkt till bonusen. Priset räknas på din insats <strong>${formatCoins(bet)}</strong>. Ändra insatsen för att ändra priset.</p>
+        ${config.bonusBuy
+          .map((o, i) => {
+            const desc = o.desc ?? (o.level !== undefined ? config.bonus.levels[o.level].desc : "");
+            const cost = o.price * bet;
+            return `<button class="buy-option" type="button" data-opt="${i}" ${cost > wallet.balance ? "disabled" : ""}>
+              <span class="buy-option__name">${o.label}</span>
+              <span class="buy-option__desc">${desc}</span>
+              <span class="buy-option__price">${coinSvg("icon")}${formatCoins(cost)}<small>${o.price}× insatsen</small></span>
+            </button>`;
+          })
+          .join("")}
+        <p class="buy-menu__note">Bonusköp har samma teoretiska återbetalning som spelet (ca ${config.rtp} %). Det är bara låtsasmynt.</p>
+      </div>`,
+      "Köp bonus",
+    );
+    content.addEventListener("click", async (e) => {
+      const b = e.target.closest("[data-opt]");
+      if (!b || b.disabled) return;
+      const opt = config.bonusBuy[Number(b.dataset.opt)];
+      const cost = opt.price * bet;
+      if (!wallet.debit(cost, "bet")) {
+        closeModal();
+        insufficient();
+        return;
+      }
+      closeModal();
+      sfx.unlock();
+      st.auto = 0;
+      if (opt.level !== undefined) {
+        await startBonus(opt.level, bet, "BONUSKÖP");
+        play();
+        return;
+      }
+      // Hold & Win-köp: snurra fram mynten och kör bonusen direkt
+      st.spinning = true;
+      clearWin();
+      renderControls();
+      const round = buyHoldWin(config, { bet, coins: opt.coins, extra: opt.extra });
+      await animateReels(round.initial, false);
+      st.grid = round.initial;
+      await runHoldWin(round, bet);
+      st.spinning = false;
+      renderControls();
+    });
   }
 
   function insufficient() {
@@ -754,7 +964,8 @@ export function mountSlot(config) {
       renderBet();
       toast(`Insatsen sänktes till ${formatCoins(affordable)} – saldot räckte inte`, { icon: icons.info });
     } else {
-      toast(`Lägsta insats är ${formatCoins(config.bets[0])} mynt. Hämta din dagliga bonus i lobbyn!`, { icon: icons.info, duration: 4000 });
+      toast(`Lägsta insats är ${formatCoins(config.bets[0])} mynt – titta på en bild och få 250 mynt!`, { icon: icons.info, duration: 4000 });
+      openWatch("../../");
     }
   }
 
@@ -792,8 +1003,8 @@ export function mountSlot(config) {
   function openPaytable() {
     const bet = currentBet();
     const cluster = config.mode === "cluster";
-    const unit = cluster ? bet : bet / config.lines.length;
-    const special = new Set([config.wild, config.scatter?.id, config.bombs?.id, hw?.coin].filter(Boolean));
+    const unit = cluster ? bet : ways ? bet / (config.ways?.divisor ?? 20) : bet / config.lines.length;
+    const special = new Set([config.wild, config.scatter?.id, config.bombs?.id, hw?.coin, config.mystery?.id].filter(Boolean));
     const regular = Object.entries(config.symbols)
       .filter(([sym, s]) => !special.has(sym) && s.pays && Object.keys(s.pays).length)
       .sort((a, b) => Math.max(...Object.values(b[1].pays)) - Math.max(...Object.values(a[1].pays)));
@@ -814,11 +1025,23 @@ export function mountSlot(config) {
       const parts = ["Ersätter alla vanliga symboler."];
       if (config.wildMultiplier) parts.push(`Vinster med WILD multipliceras ×${config.wildMultiplier}.`);
       if (config.expandingWild) parts.push(`Expanderar och täcker hela hjulet på hjul ${config.expandingWild.reels.map((r) => r + 1).join(", ")}.`);
+      if (config.explodingWild) parts.push("Exploderar när den landar och gör grannrutorna ovanför, under och bredvid till wilds.");
       if (Object.keys(wp).length) parts.push(`Egen vinst: ${Object.entries(wp).sort((a, b) => b[0] - a[0]).map(([n, x]) => `${n}× = ${formatCoins(x * unit)}`).join(", ")}.`);
       if (config.jackpot) parts.push(`${config.jackpot.count} eller fler var som helst vinner jackpotten. Maxinsats ger hela potten, lägre insats en andel.`);
       specials.push(`<div class="special">${symbolSvg(config.wild)}<p><strong>${SYMBOL_NAMES[config.wild]} är WILD.</strong> ${parts.join(" ")}</p></div>`);
     }
-    if (config.scatter) {
+    if (config.scatter && config.bonus) {
+      const s = config.scatter;
+      const sp = Object.entries(s.pays ?? {}).map(([n, x]) => `${n}× = ${formatCoins(x * bet)}`).join(", ");
+      const levels = Object.entries(config.bonus.byScatter)
+        .map(([n, l]) => `<li><b>${n} st – ${config.bonus.levels[l].name}:</b> ${config.bonus.levels[l].desc}</li>`)
+        .join("");
+      specials.push(
+        `<div class="special">${symbolSvg(s.id)}<p><strong>${SYMBOL_NAMES[s.id]} är SCATTER</strong> och räknas var som helst. ${sp ? `Vinst: ${sp}. ` : ""}Ju fler, desto bättre bonus:</p></div><ul class="levels">${levels}</ul>${
+          s.retrigger ? `<p>Under bonusen ger ${Object.entries(s.retrigger).map(([n, x]) => `${n} st +${x} spins`).join(", ")}.</p>` : ""
+        }`,
+      );
+    } else if (config.scatter) {
       const s = config.scatter;
       const fs = Object.entries(s.freeSpins ?? {}).map(([n, x]) => `${n} ger ${x}`).join(", ");
       const sp = Object.entries(s.pays ?? {}).map(([n, x]) => `${n}× = ${formatCoins(x * bet)}`).join(", ");
@@ -838,7 +1061,22 @@ export function mountSlot(config) {
         `<div class="special">${symbolSvg(config.bombs.id)}<p><strong>Bomber</strong> har en multiplikator på ×${vals[0]}–×${vals[vals.length - 1]}. När kaskaderna är klara läggs alla bomber ihop och multiplicerar rundans vinst, om rundan gav vinst.</p></div>`,
       );
     }
-    if (hw) {
+    if (config.mystery) {
+      specials.push(
+        `<div class="special">${symbolSvg(config.mystery.id)}<p><strong>Mysterieboxar:</strong> alla boxar i en snurr avslöjar samma symbol. Varje box räknas som 2–4 symboler, så antalet vägar växer – från 4 096 upp till över hundratusen.</p></div>`,
+      );
+    }
+    if (hw?.specials) {
+      const sp = (k, text) => `<div class="special">${symbolSvg(k)}<p><strong>${SYMBOL_NAMES[k]}:</strong> ${text}</p></div>`;
+      specials.push(
+        `<div class="special">${symbolSvg(hw.coin)}<p><strong>${hw.title ?? "Bonusen"}:</strong> ${hw.trigger} eller fler mynt startar bonusen med ${hw.respins} respins. Varje ny symbol låses och återställer räknaren. Fylls hela brädet får du ${hw.fullBonus}× insatsen extra.</p></div>`,
+        sp("sniper", "dubblar värdet på 1–3 slumpvisa rutor när den landar."),
+        sp("payer", "lägger sitt värde på alla andra rutor när den landar."),
+        sp("collector", "samlar ihop värdet av alla andra rutor till sig själv när den landar."),
+        sp("ppayer", "som Payer, men betalar ut igen efter varje respin resten av bonusen."),
+        sp("pcollector", "som Collector, men samlar in igen efter varje respin resten av bonusen."),
+      );
+    } else if (hw) {
       const jp = Object.entries(hw.jackpots).map(([k, m]) => `${JACKPOT_NAMES[k]} ${formatCoins(m * bet)}`).join(", ");
       specials.push(
         `<div class="special">${symbolSvg(hw.coin)}<p><strong>Hold & Win:</strong> ${hw.trigger} eller fler guldmynt startar bonusen. Mynten låses och du får ${hw.respins} respins. Varje nytt mynt låses och återställer räknaren. Alla mynt betalas ut på slutet, och fylls hela brädet vinner du GRAND. Jackpottar: ${jp}.</p></div>`,
@@ -854,7 +1092,14 @@ export function mountSlot(config) {
 
     const rules = cluster
       ? `Vinster ges för kluster om minst ${config.cluster.min} lika symboler som sitter ihop vågrätt eller lodrätt. Siffran till vänster är klustrets storlek.`
-      : "Linjevinster räknas från vänster hjul, bara högsta vinsten per linje betalas.";
+      : ways
+        ? "Vinst för lika symboler på intilliggande hjul från vänster, var som helst på hjulet. Varje kombination är en väg – beloppen nedan gäller per väg."
+        : "Linjevinster räknas från vänster hjul, bara högsta vinsten per linje betalas.";
+    if (config.bonusBuy) {
+      specials.push(
+        `<div class="special">${icons.cart}<p><strong>Köp bonus:</strong> ${config.bonusBuy.map((o) => `${o.label} för ${o.price}× insatsen`).join(", ")}.</p></div>`,
+      );
+    }
 
     openModal(
       `<div class="paytable">
@@ -867,13 +1112,13 @@ export function mountSlot(config) {
           ${regular.map(([sym, s]) => `<div class="pay-item">${symbolSvg(sym)}<ul>${pays(s.pays)}</ul></div>`).join("")}
         </div>
         ${
-          cluster
+          cluster || ways
             ? ""
             : `<h3>${config.lines.length} vinstlinjer</h3>
         <div class="line-grid">${config.lines.map((l, i) => `<div class="line-mini">${lineMini(l)}${i + 1}</div>`).join("")}</div>`
         }
         <h3>Om spelet</h3>
-        <p>Rutnät ${config.reels}×${config.rows} · Volatilitet: ${config.volatility}${config.rtp ? ` · Teoretisk återbetalning ca ${config.rtp} % (simulerad)` : ""}.</p>
+        <p>Rutnät ${config.reels}×${config.rows} · Volatilitet: ${config.volatility} · Maxvinst ${formatCoins(config.maxWin ?? 10000)}× insatsen${config.rtp ? ` · Teoretisk återbetalning ca ${config.rtp} % (simulerad)` : ""}.</p>
         <p>Varje snurr slumpas med webbläsarens kryptografiska slumpgenerator. Mynten är låtsaspengar utan värde.</p>
       </div>`,
       "Vinsttabell",
@@ -932,6 +1177,11 @@ export function mountSlot(config) {
   });
 
   $("[data-paytable]").addEventListener("click", openPaytable);
+  $("[data-buy]")?.addEventListener("click", () => {
+    sfx.unlock();
+    sfx.click();
+    openBuyMenu();
+  });
 
   document.addEventListener("keydown", (e) => {
     if (e.code !== "Space" || e.repeat) return;

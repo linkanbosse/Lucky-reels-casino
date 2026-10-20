@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="sv">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Admin – Lucky Reels</title>
+  <meta name="robots" content="noindex">
+  <meta name="theme-color" content="#0e0c1a">
+  <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/tokens.css">
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <link rel="stylesheet" href="../css/lobby.css">
+  <link rel="stylesheet" href="../css/admin.css">
+  <script type="module" src="../js/admin.js"></script>
+</head>
+<body class="admin-page">
+  <header class="header">
+    <div class="container header__inner">
+      <a class="btn btn--ghost btn--icon" href="../" aria-label="Tillbaka till lobbyn" data-icon="back"></a>
+      <h1 class="admin-title text-gold">Adminpanel</h1>
+      <span class="admin-user" data-admin-user></span>
+    </div>
+  </header>
+
+  <main class="container admin" id="admin">
+    <p class="leaders__note" data-gate>Kontrollerar behörighet…</p>
+
+    <div data-panel hidden>
+      <div class="seg admin-tabs" role="tablist">
+        <button type="button" data-tab="overview" aria-pressed="true">Översikt</button>
+        <button type="button" data-tab="players" aria-pressed="false">Spelare</button>
+        <button type="button" data-tab="tournaments" aria-pressed="false">Turneringar</button>
+        <button type="button" data-tab="message" aria-pressed="false">Meddelande</button>
+      </div>
+
+      <section data-view="overview">
+        <div class="admin-stats" data-stats></div>
+      </section>
+
+      <section data-view="players" hidden>
+        <label class="search">
+          <span class="visually-hidden">Sök spelare</span>
+          <span data-icon="search"></span>
+          <input type="search" placeholder="Sök på namn eller e-post…" data-player-search autocomplete="off">
+        </label>
+        <div class="admin-list" data-players></div>
+      </section>
+
+      <section data-view="tournaments" hidden>
+        <form class="form admin-form" data-tour-form>
+          <h2>Ny turnering</h2>
+          <label class="field"><span>Namn</span><input name="name" required minlength="3" maxlength="60" placeholder="t.ex. Helgens jakt"></label>
+          <label class="field"><span>Spel</span><select name="game" data-game-select></select></label>
+          <label class="field"><span>Poäng räknas på</span>
+            <select name="metric">
+              <option value="multiplier">Största vinst (× insatsen)</option>
+              <option value="total_win">Mest vunnet totalt</option>
+              <option value="spins">Flest snurr</option>
+            </select>
+          </label>
+          <div class="admin-form__row">
+            <label class="field"><span>Start</span><input name="starts" type="datetime-local"></label>
+            <label class="field"><span>Slut</span><input name="ends" type="datetime-local" required></label>
+          </div>
+          <div class="admin-form__row">
+            <label class="field"><span>Prispott (mynt)</span><input name="pool" type="number" min="0" step="1000" value="100000" required></label>
+            <label class="field"><span>Avgift (mynt)</span><input name="fee" type="number" min="0" step="100" value="0"></label>
+          </div>
+          <label class="field"><span>Prisfördelning i % (plats 1, 2, 3 …)</span><input name="prizes" value="50, 30, 20" required></label>
+          <p class="form__error" role="alert" data-tour-error></p>
+          <button class="btn btn--gold" type="submit">Skapa turnering</button>
+        </form>
+        <div class="admin-list" data-tours></div>
+      </section>
+
+      <section data-view="message" hidden>
+        <form class="form admin-form" data-msg-form>
+          <h2>Meddelande i lobbyn</h2>
+          <p class="form__intro">Visas överst i lobbyn för alla. Lämna tomt för att ta bort det.</p>
+          <label class="field"><span>Text</span><textarea name="text" rows="3" maxlength="200" placeholder="t.ex. Ny turnering startar fredag kl 18!"></textarea></label>
+          <button class="btn btn--gold" type="submit">Spara meddelande</button>
+        </form>
+      </section>
+    </div>
+  </main>
+
+  <div class="toasts" aria-live="polite"></div>
+</body>
+</html>

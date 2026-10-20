@@ -9,6 +9,10 @@ import { toast, openModal, closeModal, coinBurst } from "./ui/feedback.js";
 import { mountHeroMachine } from "./ui/hero-machine.js";
 import { account } from "./lib/account.js";
 import { openAccount, bindAccountUi } from "./ui/account-ui.js";
+import { openCoffee } from "./ui/coffee.js";
+import { openWatch } from "./ui/watch.js";
+import { mountLevelBadge, celebrateLevelUps } from "./ui/level-ui.js";
+import { mountTournaments, refreshTournaments } from "./ui/tournaments.js";
 
 const $ = (sel, root = document) => root.querySelector(sel);
 const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
@@ -136,7 +140,7 @@ function openGame(id) {
   }
   const facts = [
     ["Rutnät", game.grid],
-    [game.kind === "slot" ? "Linjer" : "Typ", game.kind === "slot" ? game.lines : "Bord"],
+    [game.kind === "slot" ? (typeof game.lines === "number" ? "Linjer" : "Vinstsätt") : "Typ", game.kind === "slot" ? game.lines : "Bord"],
     ["Volatilitet", game.volatility],
   ];
   const content = openModal(
@@ -180,7 +184,7 @@ async function renderLeaders() {
             (r, i) => `
       <div class="leader${r.id === me ? " is-me" : ""}">
         <span class="leader__rank">${i + 1}</span>
-        <span class="leader__name">${escapeHtml(r.username)}${r.id === me ? " (du)" : ""}</span>
+        <span class="leader__name">${escapeHtml(r.username)}${r.id === me ? " (du)" : ""}${r.level ? `<span class="level-chip">Nv ${r.level}</span>` : ""}</span>
         <span class="leader__score">${formatCoins(r[field])}</span>
       </div>`,
           )
@@ -193,6 +197,16 @@ async function renderLeaders() {
   } finally {
     el.removeAttribute("aria-busy");
   }
+}
+
+/* ---------- Meddelande från admin ---------- */
+async function renderAnnouncement() {
+  const value = await account.setting("announcement").catch(() => null);
+  const el = $("#announce");
+  if (!value?.text) return;
+  el.innerHTML = `${icons.spark}<span></span>`;
+  el.querySelector("span").textContent = value.text;
+  el.hidden = false;
 }
 
 /* ---------- Händelser ---------- */
@@ -219,6 +233,8 @@ function bindEvents() {
   $$("[data-bonus]").forEach((b) => b.addEventListener("click", onBonusClick));
 
   $$("[data-login]").forEach((b) => b.addEventListener("click", openAccount));
+  $$("[data-coffee]").forEach((b) => b.addEventListener("click", openCoffee));
+  $$("[data-watch]").forEach((b) => b.addEventListener("click", () => openWatch()));
 
   $("#lb-tabs").addEventListener("click", (e) => {
     const b = e.target.closest("[data-order]");
@@ -243,7 +259,10 @@ function bindEvents() {
       renderBonusButtons();
       if (event !== "PROFILE") {
         clearTimeout(leaderTimer);
-        leaderTimer = setTimeout(renderLeaders, 250);
+        leaderTimer = setTimeout(() => {
+          renderLeaders();
+          refreshTournaments();
+        }, 250);
       }
     },
   });
@@ -260,3 +279,7 @@ renderChips();
 renderGrid();
 bindEvents();
 mountHeroMachine($(".machine"));
+mountLevelBadge($("[data-level-badge]"));
+mountTournaments($("#tours"));
+renderAnnouncement();
+celebrateLevelUps();

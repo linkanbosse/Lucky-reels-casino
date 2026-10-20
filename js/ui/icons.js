@@ -20,6 +20,12 @@ export const icons = {
   bolt: wrap('<path d="M13 2 4 14h7l-1 8 9-12h-7Z"/>'),
   spin: wrap('<path d="M20 12a8 8 0 1 1-2.34-5.66"/><path d="M20 4v5h-5"/>'),
   spark: wrap('<path d="M12 2v6M12 16v6M2 12h6M16 12h6M5 5l3 3M16 16l3 3M5 19l3-3M16 8l3-3"/>'),
+  coffee: wrap('<path d="M4 9h13v5a6 6 0 0 1-6 6h-1a6 6 0 0 1-6-6Z"/><path d="M17 11h1.5a2.5 2.5 0 0 1 0 5H17M8 2c-1 1.5 1 2.5 0 4M12 2c-1 1.5 1 2.5 0 4"/>'),
+  shield: wrap('<path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6Z"/><path d="m9 12 2 2 4-4"/>'),
+  flag: wrap('<path d="M5 21V4M5 4h11l-2 4 2 4H5"/>'),
+  star: wrap('<path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9Z"/>'),
+  tv: wrap('<rect x="3" y="6" width="18" height="12" rx="2"/><path d="m10 9 5 3-5 3Z"/>'),
+  cart: wrap('<path d="M3 4h2l2.4 11h10.2L20 7H6.2"/><circle cx="9" cy="19.5" r="1.5"/><circle cx="17" cy="19.5" r="1.5"/>'),
 };
 
 // Guldmynt med präglad stjärna – används i saldo, logga och animationer
