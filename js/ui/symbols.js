@@ -123,7 +123,89 @@ const shapes = {
       <circle cx="50" cy="50" r="16" fill="url(#${g})" stroke="#451a03" stroke-width="3"/>
       <circle cx="66" cy="26" r="4" fill="#fff"/>`;
   },
+  lemon() {
+    const g = id("le");
+    return `<defs><radialGradient id="${g}" cx=".38" cy=".35" r=".75"><stop offset="0" stop-color="#fef9c3"/><stop offset=".5" stop-color="#facc15"/><stop offset="1" stop-color="#a16207"/></radialGradient></defs>
+      <path d="M12 54c4-22 22-36 40-36s34 12 38 30c-4 22-22 36-40 36S16 72 12 54Z" fill="url(#${g})" stroke="#713f12" stroke-width="4" stroke-linejoin="round" transform="rotate(-18 50 50)"/>
+      <path d="M30 40c6-8 16-12 24-12" stroke="#fff" stroke-opacity=".75" stroke-width="5" stroke-linecap="round" fill="none"/>`;
+  },
+  orange() {
+    const g = id("or");
+    return `<defs><radialGradient id="${g}" cx=".38" cy=".35" r=".75"><stop offset="0" stop-color="#fed7aa"/><stop offset=".5" stop-color="#f97316"/><stop offset="1" stop-color="#9a3412"/></radialGradient></defs>
+      <circle cx="50" cy="56" r="34" fill="url(#${g})" stroke="#7c2d12" stroke-width="4"/>
+      <path d="M50 22c2-8 8-12 16-12-2 8-8 12-16 12Z" fill="#22c55e" stroke="#14532d" stroke-width="2.5"/>
+      <g fill="#7c2d12" opacity=".35"><circle cx="62" cy="62" r="1.6"/><circle cx="54" cy="72" r="1.6"/><circle cx="68" cy="50" r="1.6"/><circle cx="40" cy="70" r="1.6"/></g>
+      <path d="M32 44c4-6 10-9 16-10" stroke="#fff" stroke-opacity=".7" stroke-width="5" stroke-linecap="round" fill="none"/>`;
+  },
+  plum() {
+    const g = id("pl");
+    return `<defs><radialGradient id="${g}" cx=".36" cy=".32" r=".8"><stop offset="0" stop-color="#e9d5ff"/><stop offset=".45" stop-color="#9333ea"/><stop offset="1" stop-color="#3b0764"/></radialGradient></defs>
+      <path d="M50 22c22 0 34 16 34 34S70 90 50 90 16 76 16 56s12-34 34-34Z" fill="url(#${g})" stroke="#2e1065" stroke-width="4"/>
+      <path d="M50 24c4 14 4 40-2 64" stroke="#2e1065" stroke-opacity=".35" stroke-width="3" fill="none"/>
+      <path d="M50 24c0-8 4-12 8-14" stroke="#713f12" stroke-width="4" stroke-linecap="round" fill="none"/>
+      <path d="M58 16c8-6 18-4 22 2-8 6-18 4-22-2Z" fill="#22c55e" stroke="#14532d" stroke-width="2.5"/>
+      <path d="M28 48c2-8 8-14 14-16" stroke="#fff" stroke-opacity=".6" stroke-width="5" stroke-linecap="round" fill="none"/>`;
+  },
+  grapes() {
+    const g = id("gr");
+    const berries = [
+      [36, 36], [52, 34], [68, 36], [28, 52], [44, 50], [60, 50], [76, 52], [36, 66], [52, 66], [68, 66], [44, 80], [60, 80],
+    ]
+      .map(([x, y]) => `<circle cx="${x}" cy="${y}" r="10" fill="url(#${g})" stroke="#14532d" stroke-width="2.5"/><circle cx="${x - 3}" cy="${y - 3}" r="2.5" fill="#fff" opacity=".7"/>`)
+      .join("");
+    return `<defs><radialGradient id="${g}" cx=".35" cy=".35" r=".8"><stop offset="0" stop-color="#d9f99d"/><stop offset=".55" stop-color="#65a30d"/><stop offset="1" stop-color="#1a2e05"/></radialGradient></defs>
+      <path d="M52 26c0-8 2-14 8-18" stroke="#713f12" stroke-width="4" stroke-linecap="round" fill="none"/>
+      ${berries}`;
+  },
+  wild() {
+    const a = id("wd");
+    const b = id("wd");
+    return `<defs>${lin(a, ["#7c3aed", "#db2777"], 1, 1)}${lin(b, ["#fff4c2", "#facc15", "#b45309"])}</defs>
+      <rect x="6" y="20" width="88" height="60" rx="14" fill="url(#${a})" stroke="url(#${b})" stroke-width="6"/>
+      <path d="M12 30c20-6 56-6 76 0" stroke="#fff" stroke-opacity=".35" stroke-width="4" stroke-linecap="round" fill="none"/>
+      <text x="50" y="62" text-anchor="middle" font-family="Cinzel, Georgia, serif" font-weight="900" font-size="24" fill="url(#${b})" stroke="#3b0764" stroke-width="2" paint-order="stroke" letter-spacing="1">WILD</text>`;
+  },
 };
+
+// Kortsymboler (låga vinster): bokstav med egen färg
+const ROYALS = {
+  ten: ["10", ["#bfdbfe", "#3b82f6", "#1e3a8a"], 54],
+  jack: ["J", ["#bbf7d0", "#22c55e", "#14532d"], 80],
+  queen: ["Q", ["#f5d0fe", "#c026d3", "#581c87"], 62],
+  king: ["K", ["#fecaca", "#ef4444", "#7f1d1d"], 76],
+  ace: ["A", ["#fde68a", "#f59e0b", "#78350f"], 76],
+};
+
+for (const [name, [label, colors, size]] of Object.entries(ROYALS)) {
+  shapes[name] = () => {
+    const g = id(name);
+    return `<defs>${lin(g, colors)}</defs>
+      <text x="50" y="${50 + size * 0.34}" text-anchor="middle" font-family="Cinzel, Georgia, serif" font-weight="900" font-size="${size}"
+        fill="url(#${g})" stroke="${colors[2]}" stroke-width="8" stroke-linejoin="round" paint-order="stroke">${label}</text>
+      <text x="50" y="${50 + size * 0.34}" text-anchor="middle" font-family="Cinzel, Georgia, serif" font-weight="900" font-size="${size}"
+        fill="none" stroke="#fff" stroke-opacity=".35" stroke-width="1.2">${label}</text>`;
+  };
+}
+
+// Slipade ädelstenar (mellanvinster)
+const GEMS = {
+  ruby: ["#fecdd3", "#e11d48", "#4c0519"],
+  emerald: ["#bbf7d0", "#10b981", "#064e3b"],
+  sapphire: ["#bfdbfe", "#2563eb", "#172554"],
+  amethyst: ["#e9d5ff", "#9333ea", "#2e1065"],
+};
+
+for (const [name, [light, mid, dark]] of Object.entries(GEMS)) {
+  shapes[name] = () => {
+    const g = id(name);
+    const h = id(name);
+    return `<defs>${lin(g, [light, mid, dark], 1, 1)}${lin(h, [mid, dark])}</defs>
+      <path d="M32 12h36l20 20v36L68 88H32L12 68V32Z" fill="url(#${g})" stroke="${dark}" stroke-width="4" stroke-linejoin="round"/>
+      <path d="M38 28h24l10 10v24L62 72H38L28 62V38Z" fill="url(#${h})" opacity=".85"/>
+      <path d="M32 12l6 16M68 12l-6 16M88 32 72 38M88 68 72 62M68 88l-6-16M32 88l6-16M12 68l16-6M12 32l16 6" stroke="${dark}" stroke-width="2" opacity=".7"/>
+      <path d="M40 32h16" stroke="#fff" stroke-width="4" stroke-linecap="round" opacity=".8"/>`;
+  };
+}
 
 export const SYMBOLS = Object.keys(shapes);
 
