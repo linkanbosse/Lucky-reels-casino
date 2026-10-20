@@ -1,0 +1,601 @@
+/* Lucky Reels – lobbyns layout */
+
+/* ---------- Header ---------- */
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  height: calc(var(--header-h) + env(safe-area-inset-top));
+  padding-top: env(safe-area-inset-top);
+  background: rgba(10, 8, 20, 0.72);
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  border-bottom: 1px solid var(--border);
+}
+
+.header__inner {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  height: var(--header-h);
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin-right: auto;
+  min-width: 0;
+}
+
+.logo__mark {
+  width: 36px;
+  height: 36px;
+  flex: none;
+  filter: drop-shadow(0 0 10px rgba(255, 196, 77, 0.45));
+}
+
+.logo__text {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 1.15rem;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+}
+
+.header__nav {
+  display: none;
+  gap: var(--sp-1);
+  margin-right: var(--sp-4);
+}
+
+.header__nav a {
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--r-pill);
+  color: var(--text-muted);
+  font-weight: 600;
+  font-size: var(--fs-sm);
+  transition: color var(--t-med), background var(--t-med);
+}
+
+.header__nav a:hover,
+.header__nav a[aria-current="page"] {
+  color: var(--text);
+  background: var(--surface-2);
+}
+
+.header__login {
+  display: none;
+}
+
+@media (min-width: 900px) {
+  .header__nav { display: flex; }
+  .header__login { display: inline-flex; }
+}
+
+@media (max-width: 380px) {
+  .logo__text { display: none; }
+}
+
+/* ---------- Hero ---------- */
+.hero {
+  position: relative;
+  margin-top: var(--sp-5);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  isolation: isolate;
+  background:
+    radial-gradient(80% 120% at 100% 0%, rgba(236, 72, 153, 0.35), transparent 60%),
+    radial-gradient(70% 100% at 0% 100%, rgba(34, 211, 238, 0.2), transparent 60%),
+    linear-gradient(135deg, #2a1663 0%, #170f36 60%, #0f0a24 100%);
+  border: 1px solid rgba(255, 211, 107, 0.22);
+  box-shadow: var(--shadow-2), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: repeating-conic-gradient(from 0deg at 85% 30%, rgba(255, 211, 107, 0.06) 0deg 8deg, transparent 8deg 22deg);
+  animation: rays 40s linear infinite;
+}
+
+@keyframes rays {
+  to { transform: rotate(1turn) scale(1.5); }
+}
+
+.hero__inner {
+  display: grid;
+  gap: var(--sp-5);
+  padding: var(--sp-6) var(--sp-5);
+}
+
+.hero__kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  color: var(--gold-2);
+  font-size: var(--fs-xs);
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.hero__title {
+  margin-top: var(--sp-2);
+  font-family: var(--font-display);
+  font-size: var(--fs-2xl);
+  font-weight: 900;
+  letter-spacing: 0.02em;
+}
+
+.hero__text {
+  margin-top: var(--sp-3);
+  max-width: 44ch;
+  color: var(--text-muted);
+}
+
+.hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-3);
+  margin-top: var(--sp-5);
+}
+
+/* Minimaskin i hero */
+.machine {
+  justify-self: center;
+  width: min(100%, 320px);
+  padding: 14px;
+  border-radius: 22px;
+  background: linear-gradient(180deg, #3a2a0a, #1a1204);
+  border: 2px solid transparent;
+  background-clip: padding-box;
+  position: relative;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), var(--glow-gold);
+}
+
+.machine::before {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  z-index: -1;
+  border-radius: 24px;
+  background: var(--grad-gold);
+}
+
+.machine__reels {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  padding: 8px;
+  border-radius: 14px;
+  background: #0b0716;
+  box-shadow: inset 0 6px 18px rgba(0, 0, 0, 0.8);
+}
+
+.reel {
+  position: relative;
+  height: 104px;
+  overflow: hidden;
+  border-radius: 10px;
+  background: linear-gradient(180deg, #e9e4ff 0%, #ffffff 50%, #e9e4ff 100%);
+  box-shadow: inset 0 10px 14px -8px rgba(0, 0, 0, 0.55), inset 0 -10px 14px -8px rgba(0, 0, 0, 0.55);
+}
+
+.reel__strip {
+  display: grid;
+  will-change: transform;
+}
+
+.reel__strip svg {
+  width: 100%;
+  height: 104px;
+  padding: 18px;
+}
+
+.machine__line {
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  top: 50%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(239, 68, 68, 0.9), transparent);
+  pointer-events: none;
+}
+
+.machine__label {
+  margin-top: 10px;
+  text-align: center;
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: var(--fs-xs);
+  letter-spacing: 0.3em;
+  color: var(--gold-2);
+}
+
+@media (min-width: 760px) {
+  .hero__inner {
+    grid-template-columns: 1.2fr 1fr;
+    align-items: center;
+    padding: var(--sp-7);
+  }
+}
+
+/* ---------- Statistikrad ---------- */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--sp-3);
+  margin-top: var(--sp-4);
+}
+
+.stat {
+  padding: var(--sp-3) var(--sp-4);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+
+.stat__value {
+  font-size: var(--fs-lg);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.stat__label {
+  color: var(--text-muted);
+  font-size: var(--fs-xs);
+}
+
+/* ---------- Verktygsrad ---------- */
+.toolbar {
+  display: grid;
+  gap: var(--sp-3);
+}
+
+/* ---------- Spelrutnät ---------- */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--sp-3);
+}
+
+@media (min-width: 600px) {
+  .grid { grid-template-columns: repeat(3, 1fr); gap: var(--sp-4); }
+}
+
+@media (min-width: 960px) {
+  .grid { grid-template-columns: repeat(4, 1fr); }
+}
+
+.empty {
+  grid-column: 1 / -1;
+  padding: var(--sp-6);
+  text-align: center;
+  color: var(--text-muted);
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--r-md);
+}
+
+/* ---------- Spelkort ---------- */
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  border-radius: var(--r-md);
+  overflow: hidden;
+  text-align: left;
+  isolation: isolate;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-1);
+  transition: transform var(--t-med) var(--ease-out), box-shadow var(--t-med), border-color var(--t-med);
+  animation: card-in 500ms var(--ease-out) both;
+  animation-delay: calc(var(--i, 0) * 40ms);
+}
+
+@keyframes card-in {
+  from { opacity: 0; transform: translateY(14px); }
+}
+
+.card__art {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  width: 100%;
+  height: 100%;
+  transition: transform 600ms var(--ease-out);
+}
+
+.card::after {
+  /* Mörk övergång under texten + glansstrimma */
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    linear-gradient(115deg, transparent 35%, rgba(255, 255, 255, 0.22) 50%, transparent 65%) -200% 0 / 200% 100% no-repeat,
+    linear-gradient(180deg, transparent 45%, rgba(5, 3, 12, 0.92) 100%);
+  transition: background-position 900ms var(--ease-out);
+}
+
+.card__badges {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 6px;
+  padding: var(--sp-3);
+  padding-right: 48px; /* plats för låset */
+}
+
+.card__body {
+  margin-top: auto;
+  padding: var(--sp-3);
+}
+
+.card__title {
+  font-family: var(--font-display);
+  font-size: clamp(0.95rem, 3.6vw, 1.1rem);
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+}
+
+.card__meta {
+  margin-top: 2px;
+  color: rgba(255, 255, 255, 0.65);
+  font-size: var(--fs-xs);
+}
+
+.card.is-soon .card__art {
+  filter: saturate(0.65) brightness(0.75);
+}
+
+.card__lock {
+  position: absolute;
+  top: var(--sp-3);
+  right: var(--sp-3);
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.55);
+  border: 1px solid var(--border-strong);
+}
+
+.card__lock .icon {
+  width: 14px;
+  height: 14px;
+}
+
+@media (hover: hover) {
+  .card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(255, 211, 107, 0.45);
+    box-shadow: var(--shadow-2), 0 0 0 1px rgba(255, 211, 107, 0.2), var(--glow-gold);
+  }
+
+  .card:hover .card__art {
+    transform: scale(1.06);
+  }
+
+  .card:hover::after {
+    background-position: 200% 0, 0 0;
+  }
+}
+
+.card:active {
+  transform: scale(0.97);
+}
+
+/* ---------- Spelinfo i modal ---------- */
+.game-info__art {
+  aspect-ratio: 16 / 10;
+  width: 100%;
+  overflow: hidden;
+}
+
+.game-info__art > svg {
+  width: 100%;
+  height: 100%;
+}
+
+.game-info__body {
+  padding: var(--sp-5);
+}
+
+.game-info__title {
+  font-family: var(--font-display);
+  font-size: var(--fs-xl);
+  font-weight: 900;
+}
+
+.game-info__desc {
+  margin-top: var(--sp-2);
+  color: var(--text-muted);
+}
+
+.game-info__facts {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--sp-2);
+  margin: var(--sp-4) 0;
+}
+
+.game-info__facts div {
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--r-sm);
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+
+.game-info__facts dt {
+  color: var(--text-dim);
+  font-size: 0.6875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.game-info__facts dd {
+  margin: 0;
+  font-weight: 700;
+  font-size: var(--fs-sm);
+}
+
+.game-info__body .btn {
+  width: 100%;
+}
+
+/* ---------- Topplista (förhandsvisning) ---------- */
+.leaders {
+  display: grid;
+  gap: var(--sp-2);
+  padding: var(--sp-3);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+
+.leader {
+  display: grid;
+  grid-template-columns: 36px 1fr auto;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--r-md);
+}
+
+.leader:nth-child(odd) {
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.leader__rank {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  font-weight: 900;
+  font-size: var(--fs-sm);
+  background: var(--surface-2);
+}
+
+.leader:nth-child(1) .leader__rank { background: var(--grad-gold); color: #2b1700; }
+.leader:nth-child(2) .leader__rank { background: linear-gradient(135deg, #f1f5f9, #94a3b8); color: #1e293b; }
+.leader:nth-child(3) .leader__rank { background: linear-gradient(135deg, #fdba74, #9a3412); color: #2a0e02; }
+
+.leader__name {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.leader__score {
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--gold-2);
+}
+
+.leaders__note {
+  padding: var(--sp-2) var(--sp-3) var(--sp-1);
+  color: var(--text-dim);
+  font-size: var(--fs-xs);
+  text-align: center;
+}
+
+/* ---------- Footer ---------- */
+.footer {
+  margin-top: var(--sp-7);
+  padding: var(--sp-6) 0 calc(var(--nav-h) + var(--sp-6) + env(safe-area-inset-bottom));
+  border-top: 1px solid var(--border);
+  color: var(--text-dim);
+  font-size: var(--fs-sm);
+  text-align: center;
+}
+
+.footer strong {
+  color: var(--text-muted);
+}
+
+.footer p + p {
+  margin-top: var(--sp-2);
+}
+
+@media (min-width: 900px) {
+  .footer { padding-bottom: var(--sp-6); }
+}
+
+/* ---------- Bottennavigering (mobil) ---------- */
+.bottom-nav {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 50;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  height: calc(var(--nav-h) + env(safe-area-inset-bottom));
+  padding-bottom: env(safe-area-inset-bottom);
+  background: rgba(10, 8, 20, 0.88);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-top: 1px solid var(--border);
+}
+
+.bottom-nav a,
+.bottom-nav button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  color: var(--text-dim);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  transition: color var(--t-med);
+}
+
+.bottom-nav .icon {
+  width: 24px;
+  height: 24px;
+}
+
+.bottom-nav [aria-current="page"] {
+  color: var(--gold-2);
+}
+
+@media (min-width: 900px) {
+  .bottom-nav { display: none; }
+}
+
+/* ---------- Bonusknapp-puls ---------- */
+.pulse {
+  animation: pulse 2.2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  50% { box-shadow: 0 0 0 6px rgba(255, 211, 107, 0.12), var(--glow-gold); }
+}
+
+/* Mynt-regn vid bonus */
+.coin-burst {
+  position: fixed;
+  z-index: 300;
+  width: 22px;
+  height: 22px;
+  pointer-events: none;
+  animation: coin-fly 900ms var(--ease-out) forwards;
+}
+
+@keyframes coin-fly {
+  to {
+    transform: translate(var(--dx), var(--dy)) rotate(var(--rot)) scale(0.6);
+    opacity: 0;
+  }
+}

@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="sv">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Lucky Reels – Casino med låtsaspengar</title>
+  <meta name="description" content="Lucky Reels är ett gratis socialt casino med låtsasmynt. Spela slots och bordsspel utan riktiga pengar.">
+  <meta name="theme-color" content="#0e0c1a">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/lobby.css">
+  <script type="module" src="js/main.js"></script>
+</head>
+<body>
+  <div class="sky" aria-hidden="true"></div>
+
+  <header class="header">
+    <div class="container header__inner">
+      <a class="logo" href="./" aria-label="Lucky Reels startsida">
+        <span data-coin="logo__mark"></span>
+        <span class="logo__text text-gold">LUCKY REELS</span>
+      </a>
+      <nav class="header__nav" aria-label="Huvudmeny">
+        <a href="#lobby" aria-current="page">Spel</a>
+        <a href="#leaderboard">Topplista</a>
+      </nav>
+      <div class="balance" title="Ditt saldo (låtsasmynt)">
+        <span data-coin="balance__coin"></span>
+        <span data-balance>0</span>
+      </div>
+      <button class="btn btn--ghost btn--icon" type="button" data-bonus aria-label="Hämta bonus" data-icon="gift"></button>
+      <button class="btn btn--royal header__login" type="button" data-login>Logga in</button>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="hero__inner">
+        <div>
+          <span class="hero__kicker" data-icon="spark">Gratis socialt casino</span>
+          <h1 class="hero__title" id="hero-title"><span class="text-gold">10 000 mynt</span><br>väntar på dig</h1>
+          <p class="hero__text">Snurra hjulen på handgjorda slots, klättra på topplistan och hämta ny bonus varje dag. Allt med låtsaspengar – bara skoj, aldrig insats.</p>
+          <div class="hero__actions">
+            <button class="btn btn--gold" type="button" data-play-now data-icon="play">Börja spela</button>
+            <button class="btn btn--ghost" type="button" data-bonus data-icon="gift"><span data-bonus-label>Daglig bonus</span></button>
+          </div>
+        </div>
+        <div class="machine" role="button" tabindex="0" aria-label="Snurra demoautomaten">
+          <div class="machine__reels">
+            <div class="reel"><div class="reel__strip"></div></div>
+            <div class="reel"><div class="reel__strip"></div></div>
+            <div class="reel"><div class="reel__strip"></div></div>
+          </div>
+          <div class="machine__line" aria-hidden="true"></div>
+          <p class="machine__label">TRYCK FÖR ATT SNURRA</p>
+        </div>
+      </div>
+    </section>
+
+    <div class="stats" aria-label="Din statistik">
+      <div class="stat"><div class="stat__value" data-stat-balance>0</div><div class="stat__label">Saldo</div></div>
+      <div class="stat"><div class="stat__value" data-stat-biggest>0</div><div class="stat__label">Största vinst</div></div>
+      <div class="stat"><div class="stat__value" data-stat-spins>0</div><div class="stat__label">Antal snurr</div></div>
+    </div>
+
+    <section class="section" id="lobby" aria-labelledby="lobby-title">
+      <div class="section__head">
+        <h2 class="section__title" id="lobby-title">Spellobby</h2>
+        <span class="section__meta" id="game-count"></span>
+      </div>
+      <div class="toolbar">
+        <label class="search">
+          <span class="visually-hidden">Sök spel</span>
+          <span data-icon="search"></span>
+          <input id="search" type="search" placeholder="Sök bland spelen…" autocomplete="off" enterkeyhint="search">
+        </label>
+        <div class="chips" id="chips" role="group" aria-label="Kategorier"></div>
+      </div>
+      <div class="grid" id="game-grid" style="margin-top:16px"></div>
+    </section>
+
+    <section class="section" id="leaderboard" aria-labelledby="lb-title">
+      <div class="section__head">
+        <h2 class="section__title" id="lb-title">Veckans topplista</h2>
+        <span class="section__meta">Största saldo</span>
+      </div>
+      <div class="leaders" id="leaders"></div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <p><strong>Lucky Reels</strong> är ett underhållningscasino med låtsasmynt.</p>
+      <p>Mynten har inget värde, kan inte köpas och kan inte tas ut. Inga riktiga pengar används.</p>
+      <p>Spelar du om riktiga pengar och vill ha stöd: <a href="https://www.stodlinjen.se" target="_blank" rel="noopener">Stödlinjen.se</a></p>
+    </div>
+  </footer>
+
+  <nav class="bottom-nav" aria-label="Mobilmeny">
+    <a href="#lobby" aria-current="page" data-icon="reels">Spel</a>
+    <a href="#leaderboard" data-icon="trophy">Topplista</a>
+    <button type="button" data-bonus data-icon="gift">Bonus</button>
+    <button type="button" data-login data-icon="user">Profil</button>
+  </nav>
+
+  <div class="toasts" aria-live="polite"></div>
+
+  <noscript><p style="padding:16px;text-align:center">Lucky Reels kräver JavaScript.</p></noscript>
+</body>
+</html>
