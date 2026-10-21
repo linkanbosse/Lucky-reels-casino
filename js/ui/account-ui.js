@@ -17,6 +17,11 @@ export function openAccount() {
   else openAuth("login");
 }
 
+export function openSignup() {
+  if (account.loggedIn) openProfile();
+  else openAuth("signup");
+}
+
 function openAuth(mode = "login") {
   const content = openModal(
     `<div class="auth">

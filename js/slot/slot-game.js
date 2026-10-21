@@ -38,6 +38,7 @@ const LINE_COLORS = [
 ];
 
 const BIG_WIN = 15; // × insatsen
+const MAX_BUY_COST = 500_000; // högsta bonusköp, samma gräns som databasens play_round
 const GAP = 4; // px, måste matcha .reels gap
 
 const $ = (sel, root = document) => root.querySelector(sel);
@@ -66,6 +67,7 @@ export function mountSlot(config) {
     timers: [],
     lineCycle: 0,
     overlay: null,
+    owed: 0, // avgjord vinst som ännu inte betalats ut
   };
   sfx.setEnabled(st.sound);
   const currentBet = () => (st.fs ? st.fs.bet : st.bet);
@@ -600,7 +602,7 @@ export function mountSlot(config) {
     if (baseTotal > 0) {
       winEl.textContent = formatCoins(baseTotal);
       winEl.classList.add("is-active");
-      wallet.credit(baseTotal, "win");
+      payOut(baseTotal);
       if (navigator.vibrate && st.sound) navigator.vibrate(baseTotal >= bet * BIG_WIN ? [60, 40, 120] : 25);
     } else if (!sc?.freeSpins && !round.holdWin) {
       winEl.innerHTML = "&nbsp;";
@@ -731,7 +733,7 @@ export function mountSlot(config) {
     }
     if (running !== h.total) winEl.textContent = formatCoins(h.total); // maxvinst-taket
 
-    wallet.credit(h.total, "win");
+    payOut(h.total);
     document.body.classList.remove("in-hold-win");
     renderControls();
     await showOverlay({
@@ -785,6 +787,7 @@ export function mountSlot(config) {
     sfx.click();
 
     const round = playRound(config, { bet, free, state: free ? st.fs.state : null });
+    st.owed = round.total;
     await animateReels(round.initial, free);
     st.grid = round.initial;
     if (ways) renderWays(round.initial);
@@ -895,10 +898,11 @@ export function mountSlot(config) {
           .map((o, i) => {
             const desc = o.desc ?? (o.level !== undefined ? config.bonus.levels[o.level].desc : "");
             const cost = o.price * bet;
-            return `<button class="buy-option" type="button" data-opt="${i}" ${cost > wallet.balance ? "disabled" : ""}>
+            const tooBig = cost > MAX_BUY_COST;
+            return `<button class="buy-option" type="button" data-opt="${i}" ${cost > wallet.balance || tooBig ? "disabled" : ""}>
               <span class="buy-option__name">${o.label}</span>
               <span class="buy-option__desc">${desc}</span>
-              <span class="buy-option__price">${coinSvg("icon")}${formatCoins(cost)}<small>${o.price}× insatsen</small></span>
+              <span class="buy-option__price">${coinSvg("icon")}${formatCoins(cost)}<small>${tooBig ? `max ${formatCoins(MAX_BUY_COST)} – sänk insatsen` : `${o.price}× insatsen`}</small></span>
             </button>`;
           })
           .join("")}
@@ -929,12 +933,22 @@ export function mountSlot(config) {
       clearWin();
       renderControls();
       const round = buyHoldWin(config, { bet, coins: opt.coins, extra: opt.extra });
+      st.owed = round.total;
       await animateReels(round.initial, false);
       st.grid = round.initial;
       await runHoldWin(round, bet);
       st.spinning = false;
       renderControls();
     });
+  }
+
+  // Betalar ut (en del av) rundans vinst. Det som redan betalats räknas av från st.owed,
+  // så att samma vinst aldrig betalas två gånger.
+  function payOut(amount) {
+    const pay = Math.min(amount, st.owed);
+    if (pay <= 0) return;
+    st.owed -= pay;
+    wallet.credit(pay, "win");
   }
 
   function insufficient() {
@@ -1204,13 +1218,18 @@ export function mountSlot(config) {
     }
   });
 
-  // Pausa autospel när fliken göms, så man inte spelar bort saldot i bakgrunden
+  // Pausa autospel när fliken göms, så man inte spelar bort saldot i bakgrunden.
+  // En vinst som redan är avgjord men inte visad färdigt betalas ut direkt, så att den
+  // inte går förlorad om spelaren stänger sidan mitt i animationen.
   document.addEventListener("visibilitychange", () => {
-    if (document.hidden && st.auto > 0) {
+    if (!document.hidden) return;
+    if (st.owed > 0) payOut(st.owed);
+    if (st.auto > 0) {
       st.auto = 0;
       renderControls();
     }
   });
+  addEventListener("pagehide", () => st.owed > 0 && payOut(st.owed));
 
   /* ---------- Start ---------- */
   const startGrid = Array.from({ length: config.reels }, (_, r) =>

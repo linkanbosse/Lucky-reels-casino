@@ -5,108 +5,100 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Lucky Reels – Casino med låtsaspengar</title>
   <meta name="description" content="Lucky Reels är ett gratis socialt casino med låtsasmynt. Spela slots och bordsspel utan riktiga pengar.">
-  <meta name="theme-color" content="#0e0c1a">
+  <meta name="theme-color" content="#121216">
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Inter:wght@400;600;700;800&family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/tokens.css">
   <link rel="stylesheet" href="css/base.css">
   <link rel="stylesheet" href="css/components.css">
   <link rel="stylesheet" href="css/lobby.css">
+  <link rel="stylesheet" href="css/casino.css">
   <script type="module" src="js/main.js"></script>
 </head>
-<body>
-  <div class="sky" aria-hidden="true"></div>
-
-  <header class="header">
-    <div class="container header__inner">
+<body class="lobby">
+  <header class="topbar">
+    <div class="container topbar__inner">
+      <button class="topbar__menu" type="button" data-menu aria-label="Öppna menyn" aria-expanded="false" aria-controls="drawer">
+        <span></span><span></span><span></span>
+      </button>
       <a class="logo" href="./" aria-label="Lucky Reels startsida">
         <span data-coin="logo__mark"></span>
-        <span class="logo__text text-gold">LUCKY REELS</span>
+        <span class="logo__text">Lucky<b>Reels</b></span>
       </a>
-      <nav class="header__nav" aria-label="Huvudmeny">
-        <a href="#lobby" aria-current="page">Spel</a>
-        <a href="#tournaments">Turneringar</a>
-        <a href="#leaderboard">Topplista</a>
-      </nav>
-      <span data-level-badge></span>
-      <div class="balance" title="Ditt saldo (låtsasmynt)">
-        <span data-coin="balance__coin"></span>
-        <span data-balance>0</span>
+      <div class="topbar__guest">
+        <button class="pill" type="button" data-login>Logga in</button>
+        <button class="pill" type="button" data-signup>Skapa konto</button>
       </div>
-      <button class="btn btn--ghost btn--icon" type="button" data-bonus aria-label="Hämta bonus" data-icon="gift"></button>
-      <button class="btn btn--royal header__login" type="button" data-login data-icon="user"><span data-login-label>Logga in</span></button>
+      <div class="topbar__user">
+        <span data-level-badge></span>
+        <button class="topbar__balance" type="button" data-login title="Ditt saldo (låtsasmynt)">
+          <span data-coin="balance__coin"></span>
+          <span data-balance>0</span>
+        </button>
+      </div>
     </div>
   </header>
+
+  <nav class="maintabs" aria-label="Avdelningar">
+    <div class="container maintabs__inner" role="tablist">
+      <button type="button" role="tab" data-tab="casino" aria-selected="true">Casino</button>
+      <button type="button" role="tab" data-tab="compete" aria-selected="false">Tävlingar</button>
+    </div>
+  </nav>
 
   <main class="container">
     <div class="announce" id="announce" hidden></div>
 
-    <section class="hero" aria-labelledby="hero-title">
-      <div class="hero__inner">
-        <div>
-          <span class="hero__kicker" data-icon="spark">Gratis socialt casino</span>
-          <h1 class="hero__title" id="hero-title"><span class="text-gold">10 000 mynt</span><br>väntar på dig</h1>
-          <p class="hero__text">Snurra hjulen på handgjorda slots, klättra på topplistan och hämta ny bonus varje dag. Allt med låtsaspengar – bara skoj, aldrig insats.</p>
-          <div class="hero__actions">
-            <button class="btn btn--gold" type="button" data-play-now data-icon="play">Börja spela</button>
-            <button class="btn btn--ghost" type="button" data-bonus data-icon="gift"><span data-bonus-label>Daglig bonus</span></button>
-            <button class="btn btn--ghost" type="button" data-watch data-icon="tv">Titta &amp; få 250</button>
-          </div>
+    <div class="panel" data-panel="casino">
+      <section id="lobby" aria-label="Spel">
+        <div class="filterbar">
+          <button class="filterbar__search" type="button" data-search-toggle aria-label="Sök spel" aria-expanded="false" data-icon="search"></button>
+          <div class="chips" id="chips" role="group" aria-label="Kategorier"></div>
         </div>
-        <div class="machine" role="button" tabindex="0" aria-label="Snurra demoautomaten">
-          <div class="machine__reels">
-            <div class="reel"><div class="reel__strip"></div></div>
-            <div class="reel"><div class="reel__strip"></div></div>
-            <div class="reel"><div class="reel__strip"></div></div>
-          </div>
-          <div class="machine__line" aria-hidden="true"></div>
-          <p class="machine__label">TRYCK FÖR ATT SNURRA</p>
-        </div>
-      </div>
-    </section>
-
-    <div class="stats" aria-label="Din statistik">
-      <div class="stat"><div class="stat__value" data-stat-balance>0</div><div class="stat__label">Saldo</div></div>
-      <div class="stat"><div class="stat__value" data-stat-biggest>0</div><div class="stat__label">Största vinst</div></div>
-      <div class="stat"><div class="stat__value" data-stat-spins>0</div><div class="stat__label">Antal snurr</div></div>
-    </div>
-
-    <section class="section" id="lobby" aria-labelledby="lobby-title">
-      <div class="section__head">
-        <h2 class="section__title" id="lobby-title">Spellobby</h2>
-        <span class="section__meta" id="game-count"></span>
-      </div>
-      <div class="toolbar">
-        <label class="search">
+        <label class="search" data-search hidden>
           <span class="visually-hidden">Sök spel</span>
           <span data-icon="search"></span>
           <input id="search" type="search" placeholder="Sök bland spelen…" autocomplete="off" enterkeyhint="search">
         </label>
-        <div class="chips" id="chips" role="group" aria-label="Kategorier"></div>
-      </div>
-      <div class="grid" id="game-grid" style="margin-top:16px"></div>
-    </section>
 
-    <section class="section" id="tournaments" aria-labelledby="tour-title">
-      <div class="section__head">
-        <h2 class="section__title" id="tour-title">Turneringar</h2>
-      </div>
-      <div class="tours" id="tours"><p class="leaders__note">Laddar turneringar…</p></div>
-    </section>
-
-    <section class="section" id="leaderboard" aria-labelledby="lb-title">
-      <div class="section__head">
-        <h2 class="section__title" id="lb-title">Topplista</h2>
-        <div class="seg" id="lb-tabs" role="group" aria-label="Sortera topplistan">
-          <button type="button" data-order="balance" aria-pressed="true">Saldo</button>
-          <button type="button" data-order="biggest_win" aria-pressed="false">Största vinst</button>
+        <div class="promo">
+          <button class="promo__card promo__card--bonus" type="button" data-bonus>
+            <span class="promo__icon" data-icon="gift"></span>
+            <span class="promo__text"><b data-bonus-label>Daglig bonus</b><small data-bonus-sub>Ny bonus varje dag</small></span>
+          </button>
+          <button class="promo__card promo__card--watch" type="button" data-watch>
+            <span class="promo__icon" data-icon="tv"></span>
+            <span class="promo__text"><b>Titta &amp; få 250</b><small>Se en bild i 20 s</small></span>
+          </button>
         </div>
-      </div>
-      <div class="leaders" id="leaders"><p class="leaders__note">Laddar topplistan…</p></div>
-    </section>
+
+        <div id="game-sections"></div>
+        <p class="game-count" id="game-count"></p>
+      </section>
+    </div>
+
+    <div class="panel" data-panel="compete" hidden>
+      <section class="section" id="tournaments" aria-labelledby="tour-title">
+        <div class="section__head">
+          <h2 class="section__title" id="tour-title">Turneringar</h2>
+        </div>
+        <div class="tours" id="tours"><p class="leaders__note">Laddar turneringar…</p></div>
+      </section>
+
+      <section class="section" id="leaderboard" aria-labelledby="lb-title">
+        <div class="section__head">
+          <h2 class="section__title" id="lb-title">Topplista</h2>
+          <div class="seg" id="lb-tabs" role="group" aria-label="Sortera topplistan">
+            <button type="button" data-order="balance" aria-pressed="true">Saldo</button>
+            <button type="button" data-order="biggest_win" aria-pressed="false">Största vinst</button>
+          </div>
+        </div>
+        <div class="leaders" id="leaders"><p class="leaders__note">Laddar topplistan…</p></div>
+      </section>
+    </div>
   </main>
 
   <footer class="footer">
@@ -118,12 +110,32 @@
     </div>
   </footer>
 
-  <nav class="bottom-nav" aria-label="Mobilmeny">
-    <a href="#lobby" aria-current="page" data-icon="reels">Spel</a>
-    <a href="#tournaments" data-icon="trophy">Tävla</a>
-    <button type="button" data-bonus data-icon="gift">Bonus</button>
-    <button type="button" data-login data-icon="user"><span data-login-label>Logga in</span></button>
-  </nav>
+  <div class="drawer" id="drawer" hidden>
+    <div class="drawer__backdrop" data-menu-close></div>
+    <aside class="drawer__panel" aria-label="Meny">
+      <div class="drawer__head">
+        <a class="logo" href="./"><span data-coin="logo__mark"></span><span class="logo__text">Lucky<b>Reels</b></span></a>
+        <button class="drawer__close" type="button" data-menu-close aria-label="Stäng menyn" data-icon="close"></button>
+      </div>
+      <button class="drawer__account" type="button" data-login>
+        <span class="drawer__avatar" data-icon="user"></span>
+        <span><b data-login-label>Logga in</b><small class="drawer__hint">Spara saldot och tävla</small></span>
+      </button>
+      <div class="drawer__stats" aria-label="Din statistik">
+        <div><b data-stat-balance>0</b><span>Saldo</span></div>
+        <div><b data-stat-biggest>0</b><span>Största vinst</span></div>
+        <div><b data-stat-spins>0</b><span>Snurr</span></div>
+      </div>
+      <nav class="drawer__nav">
+        <button type="button" data-goto="casino" data-icon="reels">Casino</button>
+        <button type="button" data-goto="compete" data-icon="trophy">Turneringar &amp; topplista</button>
+        <button type="button" data-bonus data-icon="gift"><span data-bonus-label>Daglig bonus</span></button>
+        <button type="button" data-watch data-icon="tv">Titta &amp; få 250 mynt</button>
+        <button type="button" data-coffee data-icon="coffee">Bjud mig på kaffe</button>
+      </nav>
+      <p class="drawer__foot">Bara låtsasmynt – aldrig riktiga pengar.</p>
+    </aside>
+  </div>
 
   <div class="toasts" aria-live="polite"></div>
 

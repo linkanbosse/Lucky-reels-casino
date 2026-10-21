@@ -529,7 +529,8 @@ export function playHoldWin(config, grid, bet, rnd = cryptoRandom) {
   const snapshot = () => board.map((col) => col.slice());
 
   function act(type, r, row, actions) {
-    const others = occupied().filter(([cr, crow]) => cr !== r || crow !== row);
+    // Jackpottmynt (t.ex. "coin:mini") har inget siffervärde och påverkas inte av specialsymbolerna
+    const others = occupied().filter(([cr, crow]) => (cr !== r || crow !== row) && typeof cellValue(board[cr][crow]) === "number");
     if (!others.length) return;
     if (type === "sniper") {
       const shots = Math.min(others.length, 1 + Math.floor(rnd() * 3));

@@ -6,9 +6,8 @@ import { load, save } from "./lib/storage.js";
 import { icons, coinSvg } from "./ui/icons.js";
 import { coverArt } from "./ui/art.js";
 import { toast, openModal, closeModal, coinBurst } from "./ui/feedback.js";
-import { mountHeroMachine } from "./ui/hero-machine.js";
 import { account } from "./lib/account.js";
-import { openAccount, bindAccountUi } from "./ui/account-ui.js";
+import { openAccount, openSignup, bindAccountUi } from "./ui/account-ui.js";
 import { openCoffee } from "./ui/coffee.js";
 import { openWatch } from "./ui/watch.js";
 import { mountLevelBadge, celebrateLevelUps } from "./ui/level-ui.js";
@@ -58,9 +57,12 @@ function formatCooldown(ms) {
 function renderBonusButtons() {
   const ready = wallet.dailyCooldown() === 0;
   $$("[data-bonus]").forEach((btn) => {
-    if (btn.classList.contains("btn")) btn.classList.toggle("pulse", ready);
+    if (btn.classList.contains("promo__card")) btn.classList.toggle("is-ready", ready);
     const label = $("[data-bonus-label]", btn);
-    if (label) label.textContent = ready ? `Hämta ${formatCoins(DAILY_BONUS)} mynt` : "Bonus hämtad";
+    const promo = btn.classList.contains("promo__card");
+    if (label) label.textContent = ready ? (promo ? "Daglig bonus" : `Hämta ${formatCoins(DAILY_BONUS)} mynt`) : "Bonus hämtad";
+    const sub = $("[data-bonus-sub]", btn);
+    if (sub) sub.textContent = ready ? `+${formatCoins(DAILY_BONUS)} mynt nu` : `Ny om ${formatCooldown(wallet.dailyCooldown())}`;
   });
 }
 
@@ -93,36 +95,65 @@ let filter = { category: load("lobby:category", "all"), query: "" };
 if (!CATEGORIES.some((c) => c.id === filter.category)) filter.category = "all";
 
 function matches(game) {
-  const inCat = filter.category === "all" || game.tags.includes(filter.category);
   const q = filter.query.trim().toLowerCase();
+  // Sökningen gäller alla spel, oavsett vald kategori
+  const inCat = !!q || filter.category === "all" || game.tags.includes(filter.category);
   const inQuery = !q || game.name.toLowerCase().includes(q) || game.tagline.toLowerCase().includes(q);
   return inCat && inQuery;
+}
+
+function metaFor(game) {
+  if (game.kind !== "slot") return "Bordsspel";
+  return `${game.grid} · ${typeof game.lines === "number" ? `${game.lines} linjer` : game.lines}`;
 }
 
 function cardHtml(game, i) {
   const soon = game.status !== "live";
   const badges = game.tags.map((t) => BADGE[t] ?? "").join("");
-  const meta = game.kind === "slot" ? `${game.grid} · ${typeof game.lines === "number" ? `${game.lines} linjer` : game.lines}` : "Bordsspel";
   return `
-    <button class="card${soon ? " is-soon" : ""}" type="button" data-game="${game.id}" style="--i:${i}"
+    <button class="tile${soon ? " is-soon" : ""}" type="button" data-game="${game.id}" style="--i:${i}"
       aria-label="${escapeHtml(game.name)}${soon ? " – kommer snart" : ""}">
-      ${coverArt(game)}
-      <div class="card__badges">${badges}${soon ? '<span class="badge badge--soon">Snart</span>' : ""}</div>
-      ${soon ? `<span class="card__lock">${icons.lock}</span>` : ""}
-      <div class="card__body">
-        <h3 class="card__title">${escapeHtml(game.name)}</h3>
-        <p class="card__meta">${meta}</p>
-      </div>
+      <span class="tile__art">
+        ${coverArt(game, { cls: "tile__svg", width: 300, height: 300 })}
+        <span class="tile__badges">${badges}${soon ? '<span class="badge badge--soon">Snart</span>' : ""}</span>
+        ${soon ? `<span class="tile__lock">${icons.lock}</span>` : '<span class="tile__play" aria-hidden="true"></span>'}
+      </span>
+      <span class="tile__title">${escapeHtml(game.name)}</span>
+      <span class="tile__meta">${metaFor(game)}</span>
     </button>`;
 }
 
+const sectionHtml = (title, list) => `
+  <section class="games">
+    <h2 class="games__title">${escapeHtml(title)}</h2>
+    <div class="tiles">${list.map(cardHtml).join("")}</div>
+  </section>`;
+
+// Populära först, spel som snart kommer sist
+const byPopularity = (a, b) =>
+  (a.status !== "live") - (b.status !== "live") || b.tags.includes("popular") - a.tags.includes("popular");
+
 function renderGrid() {
+  const el = $("#game-sections");
   const list = GAMES.filter(matches);
-  const grid = $("#game-grid");
-  grid.innerHTML = list.length
-    ? list.map(cardHtml).join("")
-    : `<p class="empty">Inga spel matchar "${escapeHtml(filter.query)}".</p>`;
-  $("#game-count").textContent = `${list.length} av ${GAMES.length} spel`;
+  const browsing = filter.category === "all" && !filter.query.trim();
+  if (!list.length) {
+    el.innerHTML = `<p class="empty">Inga spel matchar "${escapeHtml(filter.query)}".</p>`;
+  } else if (browsing) {
+    const live = GAMES.filter((g) => g.status === "live");
+    const popular = live.filter((g) => g.tags.includes("popular"));
+    const fresh = live.filter((g) => g.tags.includes("new") && !g.tags.includes("popular"));
+    el.innerHTML =
+      sectionHtml("Populära spel", popular) +
+      (fresh.length ? sectionHtml("Nya spel", fresh) : "") +
+      sectionHtml("Alla spel", [...GAMES].sort(byPopularity));
+  } else {
+    const cat = CATEGORIES.find((c) => c.id === filter.category);
+    const title = filter.query.trim() ? `Sökresultat` : cat?.label ?? "Spel";
+    el.innerHTML = sectionHtml(title, [...list].sort(byPopularity));
+  }
+  const live = GAMES.filter((g) => g.status === "live").length;
+  $("#game-count").textContent = `${live} spel att spela · ${GAMES.length - live} på väg`;
 }
 
 function renderChips() {
@@ -225,16 +256,42 @@ function bindEvents() {
     renderGrid();
   });
 
-  $("#game-grid").addEventListener("click", (e) => {
+  $("#game-sections").addEventListener("click", (e) => {
     const card = e.target.closest("[data-game]");
     if (card) openGame(card.dataset.game);
   });
 
   $$("[data-bonus]").forEach((b) => b.addEventListener("click", onBonusClick));
 
-  $$("[data-login]").forEach((b) => b.addEventListener("click", openAccount));
-  $$("[data-coffee]").forEach((b) => b.addEventListener("click", openCoffee));
-  $$("[data-watch]").forEach((b) => b.addEventListener("click", () => openWatch()));
+  $$("[data-login]").forEach((b) => b.addEventListener("click", () => (closeMenu(), openAccount())));
+  $$("[data-signup]").forEach((b) => b.addEventListener("click", openSignup));
+  $$("[data-coffee]").forEach((b) => b.addEventListener("click", () => (closeMenu(), openCoffee())));
+  $$("[data-watch]").forEach((b) => b.addEventListener("click", () => (closeMenu(), openWatch())));
+
+  // Sök: knappen fäller ut sökfältet
+  $("[data-search-toggle]").addEventListener("click", (e) => {
+    const box = $("[data-search]");
+    box.hidden = !box.hidden;
+    e.currentTarget.setAttribute("aria-expanded", String(!box.hidden));
+    if (!box.hidden) $("#search").focus();
+    else if (filter.query) {
+      $("#search").value = filter.query = "";
+      renderGrid();
+    }
+  });
+
+  // Flikar och meny
+  $$("[data-tab]").forEach((b) => b.addEventListener("click", () => setTab(b.dataset.tab)));
+  $$("[data-goto]").forEach((b) => b.addEventListener("click", () => (closeMenu(), setTab(b.dataset.goto))));
+  $("[data-menu]").addEventListener("click", openMenu);
+  $$("[data-menu-close]").forEach((b) => b.addEventListener("click", closeMenu));
+  addEventListener("keydown", (e) => e.key === "Escape" && closeMenu());
+  addEventListener("hashchange", tabFromHash);
+  document.addEventListener("click", (e) => {
+    if (!e.target.closest('a[href="#lobby"]')) return;
+    e.preventDefault();
+    setTab("casino");
+  });
 
   $("#lb-tabs").addEventListener("click", (e) => {
     const b = e.target.closest("[data-order]");
@@ -244,17 +301,14 @@ function bindEvents() {
     renderLeaders();
   });
 
-  $("[data-play-now]").addEventListener("click", () => {
-    $("#lobby").scrollIntoView({ behavior: "smooth" });
-  });
-
   wallet.onChange(({ delta }) => {
     renderBalance();
     if (delta > 0) bumpBalance();
   });
 
   bindAccountUi({
-    onChange: ({ event }) => {
+    onChange: ({ event, profile }) => {
+      $(".drawer__hint").textContent = profile ? "Visa profil och nivå" : "Spara saldot och tävla";
       renderBalance();
       renderBonusButtons();
       if (event !== "PROFILE") {
@@ -271,6 +325,38 @@ function bindEvents() {
   setInterval(renderBonusButtons, 60_000);
 }
 
+/* ---------- Flikar ---------- */
+function setTab(name, scroll = true) {
+  $$("[data-tab]").forEach((b) => b.setAttribute("aria-selected", String(b.dataset.tab === name)));
+  $$("[data-panel]").forEach((p) => (p.hidden = p.dataset.panel !== name));
+  if (scroll) scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function tabFromHash() {
+  if (["#tournaments", "#leaderboard"].includes(location.hash)) setTab("compete", false);
+  else if (location.hash === "#lobby") setTab("casino", false);
+}
+
+/* ---------- Meny ---------- */
+function openMenu() {
+  const d = $("#drawer");
+  d.hidden = false;
+  requestAnimationFrame(() => d.classList.add("is-open"));
+  $("[data-menu]").setAttribute("aria-expanded", "true");
+  document.body.style.overflow = "hidden";
+}
+
+function closeMenu() {
+  const d = $("#drawer");
+  if (d.hidden) return;
+  d.classList.remove("is-open");
+  $("[data-menu]").setAttribute("aria-expanded", "false");
+  document.body.style.overflow = "";
+  setTimeout(() => {
+    if (!d.classList.contains("is-open")) d.hidden = true;
+  }, 250);
+}
+
 /* ---------- Start ---------- */
 hydrateIcons();
 renderBalance();
@@ -278,7 +364,8 @@ renderBonusButtons();
 renderChips();
 renderGrid();
 bindEvents();
-mountHeroMachine($(".machine"));
+setTab("casino", false);
+tabFromHash();
 mountLevelBadge($("[data-level-badge]"));
 mountTournaments($("#tours"));
 renderAnnouncement();
