@@ -2,7 +2,7 @@
 // Allt kontrolleras även i databasen (is_admin), så sidan går inte att använda utan behörighet.
 
 import { account, friendlyError } from "./lib/account.js";
-import { formatCoins } from "./lib/wallet.js";
+import { formatCoins, formatKr } from "./lib/wallet.js";
 import { GAMES } from "./data/games.js";
 import { icons } from "./ui/icons.js";
 import { toast, openModal, closeModal } from "./ui/feedback.js";
@@ -85,7 +85,7 @@ async function loadStats() {
       card("Aktiva senaste dygnet", formatCoins(s.active_24h)),
       card("Aktiva senaste veckan", formatCoins(s.active_7d)),
       card("Snurr totalt", formatCoins(s.spins)),
-      card("Mynt i omlopp", formatCoins(s.coins)),
+      card("Kronor i omlopp", formatKr(s.coins)),
       card("Pågående turneringar", formatCoins(s.tournaments_active)),
       card("Avstängda", formatCoins(s.banned)),
     ].join("");

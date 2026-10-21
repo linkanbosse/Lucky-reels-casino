@@ -2,6 +2,7 @@
 // Tre eller fler mynt startar bonuståget. Under respins kan Sniper, Payer och Collector
 // landa och slå ihop värdena – de gyllene varianterna verkar efter varje respin.
 import { GAMES } from "../../data/games.js";
+import { BETS } from "../bets.js";
 import { LINES_5x4 } from "../engine.js";
 
 const base = { ten: 11, jack: 11, queen: 10, king: 10, ace: 9, lantern: 5, watch: 4, bag: 3, train: 2, coin: 1.15 };
@@ -13,7 +14,7 @@ export default {
   reels: 5,
   rows: 4,
   lines: LINES_5x4,
-  bets: [20, 40, 100, 200, 400, 1000],
+  bets: BETS,
   wild: "wild",
   holdWin: {
     title: "BONUSTÅGET",

@@ -1,4 +1,4 @@
-// Lucky Reels – plånbok för låtsasmynt.
+// Lucky Reels – plånbok för låtsaspengar (kronor).
 //
 // Alla spel pratar bara med `wallet` (debit/credit/onChange).
 // Utloggad: saldot sparas lokalt i webbläsaren.
@@ -9,11 +9,11 @@ import { load, save } from "./storage.js";
 import { account } from "./account.js";
 import { xpForBet, levelForXp, rewardBetween } from "./levels.js";
 
-export const START_BALANCE = 10_000;
-export const DAILY_BONUS = 1_000;
-export const REFILL_LIMIT = 100; // under detta saldo får man fylla på gratis
+export const START_BALANCE = 100_000;
+export const DAILY_BONUS = 10_000;
+export const REFILL_LIMIT = 1_000; // under detta saldo får man fylla på gratis
 const DAY_MS = 24 * 60 * 60 * 1000;
-export const WATCH_REWARD = 250;
+export const WATCH_REWARD = 2_500;
 const WATCH_LIMIT = 10;
 const WATCH_GAP = 3 * 60 * 1000;
 
@@ -31,11 +31,17 @@ let game = null; // spelet som spelas just nu (för turneringar)
 
 let local = load("wallet", null);
 if (!local || typeof local.balance !== "number" || !Number.isFinite(local.balance)) {
-  local = { balance: START_BALANCE, lastDaily: 0, totalWon: 0, biggestWin: 0, spins: 0 };
+  local = { balance: START_BALANCE, lastDaily: 0, totalWon: 0, biggestWin: 0, spins: 0, economy: 2 };
   save("wallet", local);
 }
 local.xp ??= 0;
 local.level ??= levelForXp(local.xp);
+// Engångsbyte till kronor med högre insatser: allt ×10 (samma som i databasen)
+if ((local.economy ?? 1) < 2) {
+  for (const k of ["balance", "totalWon", "biggestWin"]) local[k] = Math.floor((local[k] ?? 0) * 10);
+  local.economy = 2;
+  save("wallet", local);
+}
 
 // Serverläge
 let remote = null; // { balance, lastDaily, totalWon, biggestWin, spins }
@@ -314,3 +320,5 @@ account.init();
 
 const nf = new Intl.NumberFormat("sv-SE");
 export const formatCoins = (n) => nf.format(Math.floor(n));
+/** Belopp i kronor, t.ex. "12 500 kr". */
+export const formatKr = (n) => `${formatCoins(n)} kr`;

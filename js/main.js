@@ -1,7 +1,7 @@
 // Lucky Reels – lobbyns startpunkt
 
 import { GAMES, CATEGORIES } from "./data/games.js";
-import { wallet, formatCoins, DAILY_BONUS } from "./lib/wallet.js";
+import { wallet, formatCoins, formatKr, DAILY_BONUS } from "./lib/wallet.js";
 import { load, save } from "./lib/storage.js";
 import { icons, coinSvg } from "./ui/icons.js";
 import { coverArt } from "./ui/art.js";
@@ -32,10 +32,10 @@ function hydrateIcons() {
 /* ---------- Saldo ---------- */
 function renderBalance() {
   $$("[data-balance]").forEach((el) => {
-    el.textContent = formatCoins(wallet.balance);
+    el.textContent = formatKr(wallet.balance);
   });
-  $("[data-stat-balance]").textContent = formatCoins(wallet.balance);
-  $("[data-stat-biggest]").textContent = formatCoins(wallet.stats.biggestWin);
+  $("[data-stat-balance]").textContent = formatKr(wallet.balance);
+  $("[data-stat-biggest]").textContent = formatKr(wallet.stats.biggestWin);
   $("[data-stat-spins]").textContent = formatCoins(wallet.stats.spins);
 }
 
@@ -60,9 +60,9 @@ function renderBonusButtons() {
     if (btn.classList.contains("promo__card")) btn.classList.toggle("is-ready", ready);
     const label = $("[data-bonus-label]", btn);
     const promo = btn.classList.contains("promo__card");
-    if (label) label.textContent = ready ? (promo ? "Daglig bonus" : `Hämta ${formatCoins(DAILY_BONUS)} mynt`) : "Bonus hämtad";
+    if (label) label.textContent = ready ? (promo ? "Daglig bonus" : `Hämta ${formatKr(DAILY_BONUS)}`) : "Bonus hämtad";
     const sub = $("[data-bonus-sub]", btn);
-    if (sub) sub.textContent = ready ? `+${formatCoins(DAILY_BONUS)} mynt nu` : `Ny om ${formatCooldown(wallet.dailyCooldown())}`;
+    if (sub) sub.textContent = ready ? `+${formatKr(DAILY_BONUS)} nu` : `Ny om ${formatCooldown(wallet.dailyCooldown())}`;
   });
 }
 
@@ -71,13 +71,13 @@ function onBonusClick(e) {
   if (wallet.canRefill()) {
     const amount = wallet.refill();
     coinBurst(btn);
-    toast(`Påfyllning! +${formatCoins(amount)} mynt`, { variant: "gold", icon: coinSvg("icon") });
+    toast(`Påfyllning! +${formatKr(amount)}`, { variant: "gold", icon: coinSvg("icon") });
     return;
   }
   const got = wallet.claimDaily();
   if (got) {
     coinBurst(btn, 18);
-    toast(`Daglig bonus! +${formatCoins(got)} mynt`, { variant: "gold", icon: coinSvg("icon") });
+    toast(`Daglig bonus! +${formatKr(got)}`, { variant: "gold", icon: coinSvg("icon") });
   } else {
     toast(`Nästa bonus om ${formatCooldown(wallet.dailyCooldown())}`, { icon: icons.gift });
   }
@@ -216,7 +216,7 @@ async function renderLeaders() {
       <div class="leader${r.id === me ? " is-me" : ""}">
         <span class="leader__rank">${i + 1}</span>
         <span class="leader__name">${escapeHtml(r.username)}${r.id === me ? " (du)" : ""}${r.level ? `<span class="level-chip">Nv ${r.level}</span>` : ""}</span>
-        <span class="leader__score">${formatCoins(r[field])}</span>
+        <span class="leader__score">${formatKr(r[field])}</span>
       </div>`,
           )
           .join("") +

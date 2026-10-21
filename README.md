@@ -1,6 +1,6 @@
 # Lucky Reels 🎰
 
-Ett socialt casino med **låtsasmynt** – slots, bordsspel och topplistor. Inga riktiga pengar används.
+Ett socialt casino med **låtsaspengar i kronor** – slots, bordsspel och topplistor. Inga riktiga pengar används.
 
 **Live:** https://linkanbosse.github.io/Lucky-reels-casino/
 
@@ -20,7 +20,7 @@ css/
 js/
   main.js               Startpunkt för lobbyn
   data/games.js         Spelkatalogen – lobbyn byggs från denna lista
-  lib/wallet.js         Plånbok för låtsasmynt (debit/credit/bonus)
+  lib/wallet.js         Plånbok för låtsaskronor (debit/credit/bonus, formatKr)
   lib/storage.js        Säker localStorage
   lib/account.js        Inloggning, profil och topplista via Supabase
   config.js             Supabase-adress och publik nyckel
@@ -34,7 +34,10 @@ js/
   slot/engine.js        Slotmotorns matematik (ren logik, ingen DOM)
   slot/slot-game.js     Gemensamt spelgränssnitt: hjul, vinster, autospel, free spins
   slot/audio.js         Syntetiserade ljudeffekter (Web Audio)
-  slot/coins.js         Myntregn vid storvinster
+  slot/coins.js         Myntregn/partiklar vid storvinster (per tema)
+  slot/skins.js         Varje spels identitet: logga, typsnitt, symbolstil, ljud, partiklar
+  slot/bets.js          Gemensam insatsstege 10–10 000 kr
+css/skins/<id>.css      Varje spels egna ram, bakgrund, knappar och färger
   slot/games/<id>.js    Ett spels konfiguration: symboler, vinster, vikter, specialfunktioner
 games/<id>/index.html   Spelsidan (laddar konfigurationen och slot-game.js)
 tools/simulate.mjs      Simulerar ett spel och räknar ut RTP

@@ -2,6 +2,7 @@
 // Alla boxar i en snurr avslöjar samma symbol och räknas som 2–4 symboler var,
 // vilket ger fler vägar. Under bonusen höjer varje box multiplikatorn, som aldrig sjunker.
 import { GAMES } from "../../data/games.js";
+import { BETS } from "../bets.js";
 
 const base = { ten: 12, jack: 12, queen: 11, king: 11, ace: 10, lamp: 6, lock: 5, cuffs: 4, key: 3, mystery: 1.6, siren: 1.15 };
 const withWild = { ...base, wild: 1 };
@@ -15,7 +16,7 @@ export default {
   rows: 4,
   mode: "ways",
   ways: { divisor: 3.4 },
-  bets: [20, 40, 100, 200, 400, 1000],
+  bets: BETS,
   wild: "wild",
   mystery: {
     id: "mystery",

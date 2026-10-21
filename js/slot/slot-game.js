@@ -11,10 +11,11 @@ import { mountAmbient } from "./ambient.js";
 import { mountXpBar, celebrateLevelUps } from "../ui/level-ui.js";
 import { openWatch } from "../ui/watch.js";
 import { sfx } from "./audio.js";
-import { coinShower } from "./coins.js";
-import { wallet, formatCoins } from "../lib/wallet.js";
+import { coinShower, setShowerKind } from "./coins.js";
+import { skinFor } from "./skins.js";
+import { wallet, formatCoins, formatKr, START_BALANCE, WATCH_REWARD } from "../lib/wallet.js";
 import { load, save } from "../lib/storage.js";
-import { symbolSvg } from "../ui/symbols.js";
+import { symbolSvg, setRoyalStyle } from "../ui/symbols.js";
 import { icons, coinSvg } from "../ui/icons.js";
 import { toast, openModal, closeModal } from "../ui/feedback.js";
 
@@ -38,7 +39,7 @@ const LINE_COLORS = [
 ];
 
 const BIG_WIN = 15; // × insatsen
-const MAX_BUY_COST = 500_000; // högsta bonusköp, samma gräns som databasens play_round
+const MAX_BUY_COST = 10_000_000; // högsta bonusköp, samma gräns som databasens play_round
 const GAP = 4; // px, måste matcha .reels gap
 
 const $ = (sel, root = document) => root.querySelector(sel);
@@ -55,13 +56,13 @@ export function mountSlot(config) {
   /* ---------- Tillstånd ---------- */
   const savedBet = load(`slot:${id}:bet`, 0);
   const st = {
-    bet: config.bets.includes(savedBet) ? savedBet : config.bets[Math.min(1, config.bets.length - 1)],
+    bet: config.bets.includes(savedBet) ? savedBet : config.bets.includes(100) ? 100 : config.bets[0],
     turbo: load("settings:turbo", false),
     sound: load("settings:sound", true),
     spinning: false,
     auto: 0,
     fs: load(`slot:${id}:fs`, null), // { left, total, win, bet }
-    jackpot: config.jackpot ? load(`jackpot:${id}`, config.jackpot.seed) : 0,
+    jackpot: config.jackpot ? Math.max(config.jackpot.seed, load(`jackpot:${id}`, config.jackpot.seed)) : 0,
     grid: null,
     anims: [],
     timers: [],
@@ -72,7 +73,15 @@ export function mountSlot(config) {
   sfx.setEnabled(st.sound);
   const currentBet = () => (st.fs ? st.fs.bet : st.bet);
 
+  /* ---------- Spelets eget utseende ---------- */
+  const skin = skinFor(id);
+  setRoyalStyle(skin.royal);
+  setShowerKind(skin.particles);
+  sfx.setTheme(skin.sound);
+  const lineColors = skin.lines ?? LINE_COLORS;
+
   /* ---------- DOM ---------- */
+  document.body.dataset.game = id;
   document.title = `${config.name} – Lucky Reels`;
   document.body.className = "slot-page";
   document.body.style.setProperty("--g-from", config.theme.from);
@@ -107,6 +116,8 @@ export function mountSlot(config) {
     <main class="slot">
       <div class="slot__marquee">${marquee.join("")}</div>
       <div class="frame">
+        <div class="frame__deco" aria-hidden="true"></div>
+        <div class="frame__topper"><span class="frame__logo">${skin.logo[0]}</span>${skin.logo[1] ? `<span class="frame__sub">${skin.logo[1]}</span>` : ""}</div>
         <div class="reels" style="--reels:${config.reels};--rows:${config.rows}">
           ${cols}
           <svg class="paylines" aria-hidden="true"></svg>
@@ -155,7 +166,8 @@ export function mountSlot(config) {
   let cellH = 72;
   function layout() {
     const landscape = innerWidth > innerHeight && innerHeight < 520;
-    const chrome = landscape ? 56 + 60 : 56 + 22 + 40 + 56 + 92 + 36 + 5 * 12 + 40;
+    // Toppfält, XP, marquee, ramens skylt, vinstrad, kontroller och knapprad
+    const chrome = landscape ? 56 + 60 : 56 + 22 + 40 + 40 + 56 + 92 + 36 + 5 * 12 + 40;
     const availH = innerHeight - chrome - 28;
     const gutter = 2 * Math.max(16, Math.min(32, innerWidth * 0.04));
     const availW = (landscape ? innerWidth - 360 : Math.min(innerWidth, 760)) - gutter - 28;
@@ -209,11 +221,11 @@ export function mountSlot(config) {
   const cellEl = (r, row) => reelsEl.querySelector(`[data-pos="${r}-${row}"]`);
 
   function renderBalance() {
-    document.querySelectorAll("[data-balance]").forEach((el) => (el.textContent = formatCoins(wallet.balance)));
+    document.querySelectorAll("[data-balance]").forEach((el) => (el.textContent = formatKr(wallet.balance)));
   }
 
   function renderBet() {
-    $("[data-bet-amount]").textContent = formatCoins(currentBet());
+    $("[data-bet-amount]").textContent = formatKr(currentBet());
     const i = config.bets.indexOf(st.bet);
     const locked = st.spinning || st.auto > 0 || !!st.fs;
     $('[data-bet="-1"]').disabled = locked || i <= 0;
@@ -225,7 +237,7 @@ export function mountSlot(config) {
 
   function renderJackpot() {
     const el = $("[data-jackpot]");
-    if (el) el.textContent = formatCoins(st.jackpot);
+    if (el) el.textContent = formatKr(st.jackpot);
   }
 
   function renderLadder(active = -1) {
@@ -277,7 +289,7 @@ export function mountSlot(config) {
     paylinesEl.innerHTML = wins
       .filter((w) => w.line !== undefined)
       .map((w) => {
-        const c = LINE_COLORS[w.line % LINE_COLORS.length];
+        const c = lineColors[w.line % lineColors.length];
         return `<polyline points="${linePoints(w.line)}" stroke="${c}" color="${c}"/>`;
       })
       .join("");
@@ -298,13 +310,13 @@ export function mountSlot(config) {
         : `Linje ${w.line + 1} · ${w.count}× ${name}`;
     const extra = w.wildBoost ? ` · WILD ×${config.wildMultiplier}` : "";
     const mult = multiplier > 1 ? ` · ×${multiplier}` : "";
-    return `${where}${extra}${mult} · ${formatCoins(w.amount * multiplier)}`;
+    return `${where}${extra}${mult} · ${formatKr(w.amount * multiplier)}`;
   }
 
   function countUp(el, from, to, ms) {
     return new Promise((resolve) => {
       if (ms <= 0 || to === from) {
-        el.textContent = formatCoins(to);
+        el.textContent = formatKr(to);
         return resolve();
       }
       const start = performance.now();
@@ -312,14 +324,14 @@ export function mountSlot(config) {
       const step = (now) => {
         const t = Math.min(1, (now - start) / ms);
         const eased = 1 - Math.pow(1 - t, 3);
-        el.textContent = formatCoins(from + (to - from) * eased);
+        el.textContent = formatKr(from + (to - from) * eased);
         if (now - lastTick > 70 && t < 1) {
           sfx.tick();
           lastTick = now;
         }
         if (t < 1) requestAnimationFrame(step);
         else {
-          el.textContent = formatCoins(to);
+          el.textContent = formatKr(to);
           resolve();
         }
       };
@@ -484,7 +496,7 @@ export function mountSlot(config) {
       const [r, row] = ex.at;
       cellEl(r, row)?.classList.add("is-exploding");
       reelsEl.classList.add("is-shaking");
-      sfx.feature();
+      sfx.boom();
       await wait(st.turbo ? 120 : 320);
       reelsEl.classList.remove("is-shaking");
       for (const [cr, crow] of ex.cells) {
@@ -591,7 +603,7 @@ export function mountSlot(config) {
       markCells(sc.positions);
       sc.positions.forEach(([r, row]) => cellEl(r, row)?.classList.add("is-scatter"));
       if (sc.amount > 0) {
-        msgEl.textContent = `${sc.count}× ${SYMBOL_NAMES[config.scatter.id]} · ${formatCoins(sc.amount)}`;
+        msgEl.textContent = `${sc.count}× ${SYMBOL_NAMES[config.scatter.id]} · ${formatKr(sc.amount)}`;
         const before = running;
         running += sc.amount;
         await countUp(winEl, before, running, st.turbo ? 200 : 600);
@@ -600,7 +612,7 @@ export function mountSlot(config) {
 
     const baseTotal = round.total - (round.holdWin?.total ?? 0);
     if (baseTotal > 0) {
-      winEl.textContent = formatCoins(baseTotal);
+      winEl.textContent = formatKr(baseTotal);
       winEl.classList.add("is-active");
       payOut(baseTotal);
       if (navigator.vibrate && st.sound) navigator.vibrate(baseTotal >= bet * BIG_WIN ? [60, 40, 120] : 25);
@@ -691,8 +703,8 @@ export function mountSlot(config) {
           a.type === "sniper"
             ? `Sniper dubblar ${a.targets.length} ${a.targets.length === 1 ? "värde" : "värden"}!`
             : a.type === "payer"
-              ? `Payer ger +${formatCoins(a.amount * bet)} till ${a.targets.length} rutor!`
-              : `Collector samlar in ${formatCoins(a.amount * bet)}!`;
+              ? `Payer ger +${formatKr(a.amount * bet)} till ${a.targets.length} rutor!`
+              : `Collector samlar in ${formatKr(a.amount * bet)}!`;
         sfx.win(a.type === "collector" ? 3 : 2);
         await wait(st.turbo ? 250 : 650);
         a.board.forEach((col, r) =>
@@ -731,7 +743,7 @@ export function mountSlot(config) {
       running += (hw.fullBonus ?? hw.jackpots?.grand ?? 0) * bet;
       await countUp(winEl, before, running, 800);
     }
-    if (running !== h.total) winEl.textContent = formatCoins(h.total); // maxvinst-taket
+    if (running !== h.total) winEl.textContent = formatKr(h.total); // maxvinst-taket
 
     payOut(h.total);
     document.body.classList.remove("in-hold-win");
@@ -893,7 +905,7 @@ export function mountSlot(config) {
     const content = openModal(
       `<div class="buy-menu">
         <h2>Köp bonus</h2>
-        <p>Hoppa direkt till bonusen. Priset räknas på din insats <strong>${formatCoins(bet)}</strong>. Ändra insatsen för att ändra priset.</p>
+        <p>Hoppa direkt till bonusen. Priset räknas på din insats <strong>${formatKr(bet)}</strong>. Ändra insatsen för att ändra priset.</p>
         ${config.bonusBuy
           .map((o, i) => {
             const desc = o.desc ?? (o.level !== undefined ? config.bonus.levels[o.level].desc : "");
@@ -902,11 +914,11 @@ export function mountSlot(config) {
             return `<button class="buy-option" type="button" data-opt="${i}" ${cost > wallet.balance || tooBig ? "disabled" : ""}>
               <span class="buy-option__name">${o.label}</span>
               <span class="buy-option__desc">${desc}</span>
-              <span class="buy-option__price">${coinSvg("icon")}${formatCoins(cost)}<small>${tooBig ? `max ${formatCoins(MAX_BUY_COST)} – sänk insatsen` : `${o.price}× insatsen`}</small></span>
+              <span class="buy-option__price">${coinSvg("icon")}${formatKr(cost)}<small>${tooBig ? `max ${formatKr(MAX_BUY_COST)} – sänk insatsen` : `${o.price}× insatsen`}</small></span>
             </button>`;
           })
           .join("")}
-        <p class="buy-menu__note">Bonusköp har samma teoretiska återbetalning som spelet (ca ${config.rtp} %). Det är bara låtsasmynt.</p>
+        <p class="buy-menu__note">Bonusköp har samma teoretiska återbetalning som spelet (ca ${config.rtp} %). Det är bara låtsaspengar.</p>
       </div>`,
       "Köp bonus",
     );
@@ -958,16 +970,16 @@ export function mountSlot(config) {
     if (wallet.canRefill()) {
       const content = openModal(
         `<div class="auto-menu">
-          <h2>Slut på mynt</h2>
+          <h2>Slut på pengar</h2>
           <p>Ingen fara – det är bara låtsaspengar. Fyll på och fortsätt spela.</p>
-          <button class="btn btn--gold" type="button" style="grid-column:1/-1" data-refill>${icons.gift}Fyll på till 10 000 mynt</button>
+          <button class="btn btn--gold" type="button" style="grid-column:1/-1" data-refill>${icons.gift}Fyll på till ${formatKr(START_BALANCE)}</button>
         </div>`,
-        "Slut på mynt",
+        "Slut på pengar",
       );
       $("[data-refill]", content).addEventListener("click", () => {
         const amount = wallet.refill();
         closeModal();
-        toast(`+${formatCoins(amount)} mynt`, { variant: "gold", icon: coinSvg("icon") });
+        toast(`+${formatKr(amount)}`, { variant: "gold", icon: coinSvg("icon") });
       });
       return;
     }
@@ -976,9 +988,9 @@ export function mountSlot(config) {
       st.bet = affordable;
       save(`slot:${id}:bet`, st.bet);
       renderBet();
-      toast(`Insatsen sänktes till ${formatCoins(affordable)} – saldot räckte inte`, { icon: icons.info });
+      toast(`Insatsen sänktes till ${formatKr(affordable)} – saldot räckte inte`, { icon: icons.info });
     } else {
-      toast(`Lägsta insats är ${formatCoins(config.bets[0])} mynt – titta på en bild och få 250 mynt!`, { icon: icons.info, duration: 4000 });
+      toast(`Lägsta insats är ${formatKr(config.bets[0])} – titta på en bild och få ${formatKr(WATCH_REWARD)}!`, { icon: icons.info, duration: 4000 });
       openWatch("../../");
     }
   }
@@ -1040,13 +1052,13 @@ export function mountSlot(config) {
       if (config.wildMultiplier) parts.push(`Vinster med WILD multipliceras ×${config.wildMultiplier}.`);
       if (config.expandingWild) parts.push(`Expanderar och täcker hela hjulet på hjul ${config.expandingWild.reels.map((r) => r + 1).join(", ")}.`);
       if (config.explodingWild) parts.push("Exploderar när den landar och gör grannrutorna ovanför, under och bredvid till wilds.");
-      if (Object.keys(wp).length) parts.push(`Egen vinst: ${Object.entries(wp).sort((a, b) => b[0] - a[0]).map(([n, x]) => `${n}× = ${formatCoins(x * unit)}`).join(", ")}.`);
+      if (Object.keys(wp).length) parts.push(`Egen vinst: ${Object.entries(wp).sort((a, b) => b[0] - a[0]).map(([n, x]) => `${n}× = ${formatKr(x * unit)}`).join(", ")}.`);
       if (config.jackpot) parts.push(`${config.jackpot.count} eller fler var som helst vinner jackpotten. Maxinsats ger hela potten, lägre insats en andel.`);
       specials.push(`<div class="special">${symbolSvg(config.wild)}<p><strong>${SYMBOL_NAMES[config.wild]} är WILD.</strong> ${parts.join(" ")}</p></div>`);
     }
     if (config.scatter && config.bonus) {
       const s = config.scatter;
-      const sp = Object.entries(s.pays ?? {}).map(([n, x]) => `${n}× = ${formatCoins(x * bet)}`).join(", ");
+      const sp = Object.entries(s.pays ?? {}).map(([n, x]) => `${n}× = ${formatKr(x * bet)}`).join(", ");
       const levels = Object.entries(config.bonus.byScatter)
         .map(([n, l]) => `<li><b>${n} st – ${config.bonus.levels[l].name}:</b> ${config.bonus.levels[l].desc}</li>`)
         .join("");
@@ -1058,7 +1070,7 @@ export function mountSlot(config) {
     } else if (config.scatter) {
       const s = config.scatter;
       const fs = Object.entries(s.freeSpins ?? {}).map(([n, x]) => `${n} ger ${x}`).join(", ");
-      const sp = Object.entries(s.pays ?? {}).map(([n, x]) => `${n}× = ${formatCoins(x * bet)}`).join(", ");
+      const sp = Object.entries(s.pays ?? {}).map(([n, x]) => `${n}× = ${formatKr(x * bet)}`).join(", ");
       const more = [];
       if (config.freeSpinMultiplier > 1) more.push(`Alla vinster under free spins ×${config.freeSpinMultiplier}.`);
       if (config.cascade?.freeMultipliers) more.push(`Kaskadmultiplikatorn börjar på ×${config.cascade.freeMultipliers[0]} under free spins.`);
@@ -1091,7 +1103,7 @@ export function mountSlot(config) {
         sp("pcollector", "som Collector, men samlar in igen efter varje respin resten av bonusen."),
       );
     } else if (hw) {
-      const jp = Object.entries(hw.jackpots).map(([k, m]) => `${JACKPOT_NAMES[k]} ${formatCoins(m * bet)}`).join(", ");
+      const jp = Object.entries(hw.jackpots).map(([k, m]) => `${JACKPOT_NAMES[k]} ${formatKr(m * bet)}`).join(", ");
       specials.push(
         `<div class="special">${symbolSvg(hw.coin)}<p><strong>Hold & Win:</strong> ${hw.trigger} eller fler guldmynt startar bonusen. Mynten låses och du får ${hw.respins} respins. Varje nytt mynt låses och återställer räknaren. Alla mynt betalas ut på slutet, och fylls hela brädet vinner du GRAND. Jackpottar: ${jp}.</p></div>`,
       );
@@ -1119,7 +1131,7 @@ export function mountSlot(config) {
       `<div class="paytable">
         <h2>${config.name}</h2>
         <p>${config.tagline}</p>
-        <p>Vinsterna nedan gäller din insats på <strong>${formatCoins(bet)}</strong> mynt. ${rules}</p>
+        <p>Vinsterna nedan gäller din insats på <strong>${formatKr(bet)}</strong>. ${rules}</p>
         ${specials.length ? `<h3>Specialfunktioner</h3>${specials.join("")}` : ""}
         <h3>Symboler</h3>
         <div class="pay-grid">

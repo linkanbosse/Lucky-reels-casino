@@ -1,7 +1,7 @@
 // Lucky Reels – turneringar i lobbyn: lista, nedräkning, ställning och "gå med".
 
 import { account, friendlyError } from "../lib/account.js";
-import { wallet, formatCoins } from "../lib/wallet.js";
+import { wallet, formatCoins, formatKr } from "../lib/wallet.js";
 import { GAMES } from "../data/games.js";
 import { icons, coinSvg } from "./icons.js";
 import { toast, openModal } from "./feedback.js";
@@ -74,10 +74,10 @@ function render() {
       const ranked = t.entries.filter((e) => Number(e.score) > 0);
       const myRank = mine ? ranked.findIndex((e) => e.user_id === me) + 1 : 0;
       const top = ranked.slice(0, 3);
-      const prizes = (t.prizes ?? []).map((p, i) => `<li><b>${i + 1}:a</b> ${formatCoins((t.prize_pool * p) / 100)}</li>`).join("");
+      const prizes = (t.prizes ?? []).map((p, i) => `<li><b>${i + 1}:a</b> ${formatKr((t.prize_pool * p) / 100)}</li>`).join("");
       let action = "";
       if (tl.state === "ended") {
-        action = mine?.prize > 0 ? `<span class="tour__won">Du vann ${formatCoins(mine.prize)}!</span>` : "";
+        action = mine?.prize > 0 ? `<span class="tour__won">Du vann ${formatKr(mine.prize)}!</span>` : "";
       } else if (!account.loggedIn) {
         action = `<button class="btn btn--royal" type="button" data-tour-login>Logga in för att tävla</button>`;
       } else if (mine) {
@@ -86,7 +86,7 @@ function render() {
           ? `<a class="btn btn--gold" href="${url}">${icons.play}Spela ${escapeHtml(gameName(t.game_id))}</a>`
           : `<a class="btn btn--gold" href="#lobby">${icons.play}Välj ett spel</a>`;
       } else {
-        action = `<button class="btn btn--gold" type="button" data-join="${t.id}">${t.entry_fee > 0 ? `Gå med · ${formatCoins(t.entry_fee)}` : "Gå med gratis"}</button>`;
+        action = `<button class="btn btn--gold" type="button" data-join="${t.id}">${t.entry_fee > 0 ? `Gå med · ${formatKr(t.entry_fee)}` : "Gå med gratis"}</button>`;
       }
       return `<article class="tour tour--${tl.state}">
         <header class="tour__head">
@@ -96,14 +96,14 @@ function render() {
           </div>
           <span class="tour__time">${tl.state === "live" ? '<i class="tour__dot"></i>' : ""}${tl.text}</span>
         </header>
-        <div class="tour__pool">${coinSvg("icon")}<b>${formatCoins(t.prize_pool)}</b><span>i prispotten · ${t.entries.length} deltagare</span></div>
+        <div class="tour__pool">${coinSvg("icon")}<b>${formatKr(t.prize_pool)}</b><span>i prispotten · ${t.entries.length} deltagare</span></div>
         <ul class="tour__prizes">${prizes}</ul>
         <ol class="tour__top">
           ${top.length
             ? top
                 .map(
                   (e, i) => `<li class="${e.user_id === me ? "is-me" : ""}"><span class="tour__rank">${i + 1}</span><span class="tour__player">${escapeHtml(e.profiles?.username ?? "Spelare")}</span><b>${metric.fmt(e.score)}</b>${
-                    e.prize > 0 ? `<em>+${formatCoins(e.prize)}</em>` : ""
+                    e.prize > 0 ? `<em>+${formatKr(e.prize)}</em>` : ""
                   }</li>`,
                 )
                 .join("")
@@ -147,7 +147,7 @@ function openStandings(t) {
       (e, i) => `<div class="leader${e.user_id === me ? " is-me" : ""}">
         <span class="leader__rank">${i + 1}</span>
         <span class="leader__name">${escapeHtml(e.profiles?.username ?? "Spelare")}${e.profiles?.level ? `<span class="level-chip">Nv ${e.profiles.level}</span>` : ""}</span>
-        <span class="leader__score">${metric.fmt(e.score)}${e.prize > 0 ? ` · +${formatCoins(e.prize)}` : ""}</span>
+        <span class="leader__score">${metric.fmt(e.score)}${e.prize > 0 ? ` · +${formatKr(e.prize)}` : ""}</span>
       </div>`,
     )
     .join("");

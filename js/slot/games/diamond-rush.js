@@ -1,5 +1,6 @@
 // Diamond Rush – 5×3, 20 linjer. Diamanten är wild och expanderar på hjul 2–4.
 import { GAMES } from "../../data/games.js";
+import { BETS } from "../bets.js";
 import { LINES_5x3 } from "../engine.js";
 
 const base = { ten: 11, jack: 11, queen: 10, king: 10, ace: 9, amethyst: 6, sapphire: 5, emerald: 4, ruby: 3, seven: 2 };
@@ -10,7 +11,7 @@ export default {
   reels: 5,
   rows: 3,
   lines: LINES_5x3.slice(0, 20),
-  bets: [10, 20, 50, 100, 200, 500, 1000],
+  bets: BETS,
   wild: "diamond",
   expandingWild: { reels: [1, 2, 3] },
   symbols: {

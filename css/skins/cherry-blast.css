@@ -1,0 +1,138 @@
+/* Cherry Blast – godisfabriken: polkaprickar, polkagrisram och blanka godisbubblor i varje ruta */
+
+[data-game="cherry-blast"] {
+  --font-logo: "Lilita One", var(--font-display);
+  --font-num: "Lilita One", var(--font-body);
+  --accent: #ffe14d;
+  --accent-light: #fff7c2;
+
+  --page-bg:
+    radial-gradient(circle at 25% 25%, rgba(255, 255, 255, 0.08) 0 7px, transparent 8px) 0 0 / 46px 46px,
+    radial-gradient(circle at 75% 75%, rgba(255, 180, 220, 0.1) 0 5px, transparent 6px) 0 0 / 46px 46px,
+    radial-gradient(70% 40% at 50% 0%, rgba(255, 120, 190, 0.45), transparent 70%),
+    linear-gradient(180deg, #8a1257 0%, #5b0b3d 55%, #2c0420 100%);
+  --topbar-bg: rgba(70, 6, 46, 0.85);
+  --topbar-line: rgba(255, 170, 210, 0.45);
+
+  --frame-radius: 30px;
+  --frame-pad: 10px;
+  --rim-inset: -9px;
+  --frame-bg: linear-gradient(180deg, #ffd6ea, #ffb3d4);
+  --frame-rim: repeating-linear-gradient(-45deg, #ff2d6f 0 11px, #fff 11px 22px);
+  --frame-shadow: 0 24px 60px rgba(40, 0, 25, 0.7), 0 0 0 12px rgba(255, 255, 255, 0.08), 0 0 50px rgba(255, 77, 141, 0.45);
+
+  --reels-bg: #ffa6cb;
+  --reels-radius: 22px;
+  --reel-radius: 18px;
+  --reel-bg: linear-gradient(180deg, #fff3f9, #ffe3f0 50%, #ffd3e7);
+  --reel-bg-free: linear-gradient(180deg, #fff9db, #ffefb0 50%, #ffe08a);
+  --reel-shadow: inset 0 4px 10px rgba(180, 20, 90, 0.18);
+
+  --topper-bg: linear-gradient(180deg, #ff6aa6, #e01e66);
+  --topper-shadow: 0 0 0 4px #fff, 0 0 0 7px #e01e66, 0 10px 22px rgba(60, 0, 30, 0.6);
+  --topper-radius: 999px;
+  --logo-size: 1.55rem;
+  --logo-weight: 400;
+  --logo-spacing: 0.02em;
+  --logo-grad: linear-gradient(180deg, #ffffff 0%, #fff6c9 60%, #ffe14d 100%);
+  --logo-filter: drop-shadow(0 3px 0 #a3104a) drop-shadow(0 0 1px #a3104a);
+  --sub-color: #fff;
+
+  --spin-bg: radial-gradient(circle at 35% 28%, #fff 0 7%, #ff9cc6 14%, #ff2d6f 55%, #a3104a 100%);
+  --spin-fg: #fff;
+  --spin-ring: rgba(255, 255, 255, 0.75);
+  --spin-shadow: 0 8px 22px rgba(60, 0, 30, 0.6), 0 0 0 5px #fff, 0 0 26px rgba(255, 45, 111, 0.6), inset 0 -6px 0 rgba(120, 0, 40, 0.4);
+  --ui-bg: rgba(255, 255, 255, 0.12);
+  --ui-border: rgba(255, 255, 255, 0.45);
+  --ui-btn: rgba(255, 255, 255, 0.18);
+
+  --win-grad: linear-gradient(180deg, #fff, #ffe14d 60%, #ff9f1c);
+  --win-ring: #ff2d6f;
+  --win-color: #ffe14d;
+  --title-grad: linear-gradient(180deg, #fff, #ffe14d 55%, #ff9f1c);
+  --overlay-bg: radial-gradient(circle, rgba(170, 20, 100, 0.9), rgba(40, 0, 25, 0.96));
+}
+
+/* Varje ruta är en blank godisbubbla */
+[data-game="cherry-blast"] .cell::before {
+  content: "";
+  position: absolute;
+  inset: 8%;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 35% 28%, rgba(255, 255, 255, 0.95) 0 9%, transparent 22%),
+    radial-gradient(circle at 50% 55%, #ffffff 0 45%, #ffe1ef 70%, #ffc2dc 100%);
+  box-shadow: 0 2px 0 rgba(200, 40, 110, 0.25), inset 0 -3px 0 rgba(255, 140, 190, 0.35);
+}
+
+[data-game="cherry-blast"] .cell.is-win::before {
+  inset: 4%;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff7c2, #ffe14d 60%, #ff9f1c);
+  box-shadow: 0 0 0 3px #fff, 0 0 18px rgba(255, 225, 77, 0.9);
+}
+
+[data-game="cherry-blast"] .cell.is-win::after {
+  border-radius: 50%;
+  inset: 4%;
+}
+
+[data-game="cherry-blast"] .cell svg {
+  position: relative;
+  width: 72%;
+  height: 72%;
+  filter: drop-shadow(0 2px 2px rgba(120, 0, 50, 0.3));
+}
+
+[data-game="cherry-blast"] .reels.has-win .cell:not(.is-win) {
+  opacity: 0.45;
+  filter: saturate(0.5);
+}
+
+/* Strössel i ramens kant */
+[data-game="cherry-blast"] .frame__deco {
+  inset: -9px;
+  padding: 9px;
+  border-radius: 39px;
+  background:
+    linear-gradient(transparent, transparent),
+    radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.55) 0 2px, transparent 3px) 0 0 / 22px 22px;
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.5);
+}
+
+[data-game="cherry-blast"] .frame__topper::before,
+[data-game="cherry-blast"] .frame__topper::after {
+  /* godispapperets snurrar på sidorna */
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 22px;
+  height: 30px;
+  background: linear-gradient(180deg, #ff6aa6, #e01e66);
+  clip-path: polygon(0 0, 100% 35%, 100% 65%, 0 100%);
+  transform: translateY(-50%);
+}
+
+[data-game="cherry-blast"] .frame__topper::before {
+  left: -24px;
+  transform: translateY(-50%) scaleX(-1);
+}
+
+[data-game="cherry-blast"] .frame__topper::after {
+  right: -24px;
+}
+
+[data-game="cherry-blast"] .slot-top__title,
+[data-game="cherry-blast"] .overlay__title,
+[data-game="cherry-blast"] .overlay__amount {
+  font-family: "Lilita One", var(--font-display);
+  font-weight: 400;
+}
+
+[data-game="cherry-blast"] .winbar__msg,
+[data-game="cherry-blast"] .bet__label {
+  color: #ffd1e6;
+}

@@ -1,6 +1,7 @@
 // Cherry Blast – 6×5 med klustervinster och kaskader.
 // Under free spins landar bomber vars multiplikatorer läggs ihop och multiplicerar vinsten.
 import { GAMES } from "../../data/games.js";
+import { BETS } from "../bets.js";
 
 const base = { cherry: 20, lemon: 18, orange: 16, plum: 14, grapes: 12, bell: 6, seven: 4, diamond: 3, star: 2.2 };
 const free = { ...base, bomb: 2 };
@@ -13,7 +14,7 @@ export default {
   mode: "cluster",
   cluster: { min: 5 },
   cascade: { multipliers: [1] },
-  bets: [10, 20, 50, 100, 200, 500, 1000],
+  bets: BETS,
   scatter: { id: "star", pays: { 4: 3, 5: 5, 6: 100 }, freeSpins: { 4: 10, 5: 12, 6: 15 }, retrigger: { 3: 5 } },
   bombs: { id: "bomb" },
   feature: "Bomber multiplicerar vinsterna",

@@ -1,6 +1,7 @@
 // Moonlight Magic – 5×4, 40 linjer med kaskader.
 // Varje kaskad i rad höjer multiplikatorn, och under free spins börjar den på ×3.
 import { GAMES } from "../../data/games.js";
+import { BETS } from "../bets.js";
 import { LINES_5x4 } from "../engine.js";
 
 const base = { ten: 10, jack: 10, queen: 10, king: 9, ace: 9, amethyst: 5, sapphire: 4, star: 3, moon: 1 };
@@ -13,7 +14,7 @@ export default {
   rows: 4,
   lines: LINES_5x4,
   cascade: { multipliers: [1, 2, 3, 5], freeMultipliers: [3, 6, 9, 15] },
-  bets: [20, 40, 100, 200, 400, 1000],
+  bets: BETS,
   wild: "wild",
   scatter: { id: "moon", pays: { 3: 2, 4: 5, 5: 20 }, freeSpins: { 3: 8, 4: 12, 5: 20 }, retrigger: { 3: 5 } },
   symbols: {

@@ -1,12 +1,12 @@
 // Lucky Reels – nivåer och XP. Samma formler som databasens play_round/level_for_xp.
-//   XP per snurr: 10 + insatsen/20 (max 60)
+//   XP per snurr: 10 + insatsen/200 (max 60)
 //   Nivå: floor(sqrt(xp / 100)) + 1  → nivå 2 vid 100 XP, nivå 10 vid 8 100 XP
-//   Belöning för ny nivå N: N × 250 mynt
+//   Belöning för ny nivå N: N × 2 500 kr
 
-export const xpForBet = (bet) => (bet > 0 ? 10 + Math.floor(Math.min(bet, 1000) / 20) : 0);
+export const xpForBet = (bet) => (bet > 0 ? 10 + Math.floor(Math.min(bet, 10_000) / 200) : 0);
 export const levelForXp = (xp) => Math.floor(Math.sqrt(Math.max(0, xp) / 100)) + 1;
 export const xpForLevel = (level) => 100 * (level - 1) ** 2;
-export const rewardForLevel = (level) => level * 250;
+export const rewardForLevel = (level) => level * 2_500;
 
 /** Belöningen för att gå från nivå `from` till `to`. */
 export function rewardBetween(from, to) {

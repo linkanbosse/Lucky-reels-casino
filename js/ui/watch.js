@@ -1,7 +1,7 @@
-// Lucky Reels – "Titta och få mynt": en bild visas i 20 sekunder, sedan får man mynt.
+// Lucky Reels – "Titta och få pengar": en bild visas i 20 sekunder, sedan får man låtsaspengar.
 
 import { WATCH_IMAGES, WATCH_SECONDS } from "../config.js";
-import { wallet, formatCoins, WATCH_REWARD } from "../lib/wallet.js";
+import { wallet, formatKr, WATCH_REWARD } from "../lib/wallet.js";
 import { friendlyError } from "../lib/account.js";
 import { toast, coinBurst } from "./feedback.js";
 import { icons, coinSvg } from "./icons.js";
@@ -32,13 +32,13 @@ export async function openWatch(base = "") {
   el.className = "watch";
   el.setAttribute("role", "dialog");
   el.setAttribute("aria-modal", "true");
-  el.setAttribute("aria-label", "Titta och få mynt");
+  el.setAttribute("aria-label", "Titta och få pengar");
   el.innerHTML = `
     <div class="watch__top">
       <span class="watch__tag">${icons.tv}Titta i ${WATCH_SECONDS} sekunder</span>
       <span class="watch__timer"><svg viewBox="0 0 50 50"><circle cx="25" cy="25" r="${R}" class="watch__track"/><circle cx="25" cy="25" r="${R}" class="watch__ring" stroke-dasharray="${C}" transform="rotate(-90 25 25)"/></svg><b data-left>${WATCH_SECONDS}</b></span>
     </div>
-    <img class="watch__img" src="${src}" alt="Bild som visas för att tjäna mynt">
+    <img class="watch__img" src="${src}" alt="Bild som visas för att tjäna låtsaspengar">
     <div class="watch__bottom">
       <button class="btn btn--gold" type="button" data-claim disabled>${coinSvg("icon")}<span>Vänta…</span></button>
       <button class="link-btn" type="button" data-skip>Avbryt utan belöning</button>
@@ -62,7 +62,7 @@ export async function openWatch(base = "") {
     if (t < 1) raf = requestAnimationFrame(tick);
     else {
       claim.disabled = false;
-      claim.querySelector("span").textContent = `Hämta ${formatCoins(WATCH_REWARD)} mynt`;
+      claim.querySelector("span").textContent = `Hämta ${formatKr(WATCH_REWARD)}`;
       claim.classList.add("pulse");
       left.textContent = "✓";
     }
@@ -82,7 +82,7 @@ export async function openWatch(base = "") {
       close();
       if (got) {
         coinBurst(document.querySelector(".balance") ?? document.body, 16);
-        toast(`Tack för att du tittade! +${formatCoins(got)} mynt`, { variant: "gold", icon: coinSvg("icon") });
+        toast(`Tack för att du tittade! +${formatKr(got)}`, { variant: "gold", icon: coinSvg("icon") });
       } else {
         toast("Belöningen kunde inte hämtas – försök igen om en stund.", { icon: icons.info });
       }

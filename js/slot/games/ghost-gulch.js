@@ -2,6 +2,7 @@
 // Dynamit är WILD och spränger grannrutorna till wilds. 3, 4 eller 5 dödskallar
 // startar tre olika bonusnivåer där alla wilds sitter fast och exploderar varje snurr.
 import { GAMES } from "../../data/games.js";
+import { BETS } from "../bets.js";
 
 const base = { ten: 12, jack: 12, queen: 11, king: 11, ace: 10, horseshoe: 6, boot: 5, hat: 4, sheriff: 3, skull: 1.4 };
 const withWild = { ...base, dynamite: 1.1 };
@@ -15,7 +16,7 @@ export default {
   rows: 4,
   mode: "ways",
   ways: { divisor: 19.5 },
-  bets: [20, 40, 100, 200, 400, 1000],
+  bets: BETS,
   wild: "dynamite",
   explodingWild: { pattern: [[0, -1], [0, 1], [-1, 0], [1, 0]] },
   scatter: { id: "skull", pays: { 3: 2, 4: 10, 5: 50 }, retrigger: { 3: 3 } },

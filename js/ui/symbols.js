@@ -225,8 +225,125 @@ const ROYALS = {
   ace: ["A", ["#fde68a", "#f59e0b", "#78350f"], 76],
 };
 
+// Spelets stil på kortsymbolerna (se js/slot/skins.js). null = standardutseendet.
+let royalStyle = null;
+export function setRoyalStyle(style) {
+  royalStyle = style ?? null;
+}
+
+// Typsnitt har olika bredd – skala så att bokstäverna fyller rutan lika mycket
+const FONT_SCALE = {
+  Monoton: 0.6, Orbitron: 0.8, "Black Ops One": 0.8, "Alfa Slab One": 0.78, Rye: 0.78,
+  "Lilita One": 0.95, "Uncial Antiqua": 0.86, "Marcellus SC": 0.92, "Cinzel Decorative": 0.78,
+};
+
+// Bokstäverna krymps så att de ryms i plattan/medaljongen
+const DECO_SCALE = { crystal: 0.95, plaque: 0.88, stone: 0.84, wood: 0.86, steel: 0.84, brass: 0.72 };
+
+// Standardfärger per stil när skinnet inte anger egna
+const STYLE_COLORS = {
+  neon: { ten: "#22e3ff", jack: "#7cff6b", queen: "#ff3df0", king: "#ff4d4d", ace: "#fff35c" },
+  candy: {
+    ten: ["#e0f2fe", "#38bdf8", "#075985"], jack: ["#ecfccb", "#84cc16", "#365314"],
+    queen: ["#fce7f3", "#f472b6", "#831843"], king: ["#fee2e2", "#f43f5e", "#881337"], ace: ["#ffedd5", "#fb923c", "#7c2d12"],
+  },
+};
+
+const rivet = (x, y) => `<circle cx="${x}" cy="${y}" r="3.4" fill="#d1d5db" stroke="#1f2937" stroke-width="1.4"/><circle cx="${x - 1}" cy="${y - 1}" r="1.1" fill="#fff" opacity=".8"/>`;
+
+function styledRoyal(name, label, defColors, baseSize) {
+  const st = royalStyle;
+  const font = `${st.font}, Georgia, serif`;
+  const plate = !["neon", "candy", "mystic"].includes(st.deco);
+  const size = baseSize * (FONT_SCALE[st.font] ?? 0.85) * (DECO_SCALE[st.deco] ?? 1);
+  const colors = st.colors?.[name] ?? STYLE_COLORS[st.deco]?.[name] ?? defColors;
+  const g = id(name);
+  const t = (attrs) => `<text x="50" y="${plate ? 53 : 52}" text-anchor="middle" dominant-baseline="central" font-family="${font}" font-size="${size.toFixed(1)}" ${attrs}>${label}</text>`;
+  const letter = (stroke = colors[2], w = 7) =>
+    `<defs>${lin(g, colors)}</defs>${t(`fill="url(#${g})" stroke="${stroke}" stroke-width="${w}" stroke-linejoin="round" paint-order="stroke"`)}${t(`fill="none" stroke="#fff" stroke-opacity=".35" stroke-width="1"`)}`;
+
+  switch (st.deco) {
+    case "neon": {
+      const c = colors;
+      const f = id("glow");
+      return `<defs><filter id="${f}" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="3.2"/></filter></defs>
+        ${t(`fill="${c}" filter="url(#${f})" opacity=".95"`)}
+        ${t(`fill="${c}"`)}
+        ${t(`fill="#fff" opacity=".55" transform="translate(0 -0.6)" style="mix-blend-mode:screen"`)}`;
+    }
+    case "crystal": {
+      const p = id("cp");
+      return `<defs>${lin(p, ["rgba(255,255,255,.22)", "rgba(125,211,252,.06)", "rgba(15,23,42,.35)"], 1, 1)}</defs>
+        <path d="M50 6 88 28v44L50 94 12 72V28Z" fill="url(#${p})" stroke="${colors[1]}" stroke-opacity=".55" stroke-width="2"/>
+        <path d="M50 6v88M12 28l76 44M88 28 12 72" stroke="#fff" stroke-opacity=".07" stroke-width="1.5"/>
+        ${letter(colors[2], 6)}`;
+    }
+    case "plaque": {
+      const p = id("pl");
+      const r = id("rim");
+      return `<defs>${lin(p, [colors[1], colors[2]])}${lin(r, ["#fff4c2", "#d4a017", "#7a4a05"], 1, 1)}</defs>
+        <path d="M18 10h64q8 0 8 8v52q0 10-10 14L50 94 20 84q-10-4-10-14V18q0-8 8-8Z" fill="url(#${p})" stroke="url(#${r})" stroke-width="5"/>
+        <path d="M24 18h52" stroke="#fff" stroke-opacity=".25" stroke-width="3" stroke-linecap="round"/>
+        ${(() => {
+          const gg = id("gl");
+          return `<defs>${lin(gg, ["#fffbe6", "#facc15", "#a16207"])}</defs>${t(`fill="url(#${gg})" stroke="#3b2405" stroke-width="5" stroke-linejoin="round" paint-order="stroke"`)}`;
+        })()}`;
+    }
+    case "candy": {
+      return `<defs>${lin(g, colors)}</defs>
+        ${t(`fill="none" stroke="${colors[2]}" stroke-width="15" stroke-linejoin="round"`)}
+        ${t(`fill="url(#${g})" stroke="#fff" stroke-width="7" stroke-linejoin="round" paint-order="stroke"`)}
+        <ellipse cx="38" cy="30" rx="9" ry="4" fill="#fff" opacity=".75" transform="rotate(-20 38 30)"/>`;
+    }
+    case "mystic": {
+      const f = id("mg");
+      return `<defs>${lin(g, colors)}<filter id="${f}" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="4"/></filter></defs>
+        ${t(`fill="${colors[1]}" filter="url(#${f})" opacity=".8"`)}
+        ${t(`fill="url(#${g})" stroke="${colors[2]}" stroke-width="5" stroke-linejoin="round" paint-order="stroke"`)}
+        <path d="M80 14l2.4 6.6L89 23l-6.6 2.4L80 32l-2.4-6.6L71 23l6.6-2.4Z" fill="#fff" opacity=".9"/>`;
+    }
+    case "stone": {
+      const p = id("sd");
+      return `<defs>${lin(p, ["#f3e2b3", "#d6b77a", "#a9824a"], 0.4, 1)}</defs>
+        <rect x="8" y="8" width="84" height="84" rx="8" fill="url(#${p})" stroke="#6b4a1f" stroke-width="3"/>
+        <rect x="15" y="15" width="70" height="70" rx="4" fill="none" stroke="#7c5a2a" stroke-opacity=".55" stroke-width="2"/>
+        <path d="M8 30h6M86 64h6M30 92v-6" stroke="#6b4a1f" stroke-opacity=".5" stroke-width="2"/>
+        ${letter(colors[2], 6)}`;
+    }
+    case "wood": {
+      const p = id("wd");
+      return `<defs>${lin(p, ["#9a6532", "#6e4220", "#4a2a12"])}</defs>
+        <rect x="7" y="14" width="86" height="72" rx="6" fill="url(#${p})" stroke="#2b1607" stroke-width="3"/>
+        <path d="M10 32c20-4 40 4 80-2M10 54c26 3 50-4 80 1M10 72c18-3 44 3 80-1" stroke="#2b1607" stroke-opacity=".35" stroke-width="1.6" fill="none"/>
+        <circle cx="15" cy="22" r="2.6" fill="#1c1917"/><circle cx="85" cy="22" r="2.6" fill="#1c1917"/>
+        <circle cx="15" cy="78" r="2.6" fill="#1c1917"/><circle cx="85" cy="78" r="2.6" fill="#1c1917"/>
+        ${letter("#1a0d03", 6)}`;
+    }
+    case "steel": {
+      const p = id("stl");
+      return `<defs>${lin(p, ["#d1d5db", "#6b7280", "#374151"], 0.3, 1)}</defs>
+        <rect x="8" y="8" width="84" height="84" rx="6" fill="url(#${p})" stroke="#111827" stroke-width="3"/>
+        <rect x="13" y="13" width="74" height="74" rx="3" fill="none" stroke="#fff" stroke-opacity=".25" stroke-width="1.5"/>
+        ${rivet(17, 17)}${rivet(83, 17)}${rivet(17, 83)}${rivet(83, 83)}
+        ${letter("#0b0f17", 6)}`;
+    }
+    case "brass": {
+      const p = id("bs");
+      const q = id("bi");
+      return `<defs>${lin(p, ["#fff1b8", "#d4a017", "#7a4a05"], 1, 1)}${lin(q, ["#3b2410", "#1a0f06"])}</defs>
+        <circle cx="50" cy="50" r="43" fill="url(#${p})" stroke="#3b2205" stroke-width="3"/>
+        <circle cx="50" cy="50" r="34" fill="url(#${q})" stroke="#7a4a05" stroke-width="2"/>
+        ${[0, 45, 90, 135, 180, 225, 270, 315].map((a) => `<circle cx="${(50 + 38.5 * Math.cos((a * Math.PI) / 180)).toFixed(1)}" cy="${(50 + 38.5 * Math.sin((a * Math.PI) / 180)).toFixed(1)}" r="2" fill="#5a3505"/>`).join("")}
+        ${letter("#120a03", 5)}`;
+    }
+    default:
+      return letter();
+  }
+}
+
 for (const [name, [label, colors, size]] of Object.entries(ROYALS)) {
   shapes[name] = () => {
+    if (royalStyle) return styledRoyal(name, label, colors, size);
     const g = id(name);
     return `<defs>${lin(g, colors)}</defs>
       <text x="50" y="${50 + size * 0.34}" text-anchor="middle" font-family="Cinzel, Georgia, serif" font-weight="900" font-size="${size}"

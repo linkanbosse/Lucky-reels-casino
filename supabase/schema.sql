@@ -12,7 +12,7 @@
 create table if not exists public.profiles (
   id uuid primary key references auth.users (id) on delete cascade,
   username text not null,
-  balance bigint not null default 10000 check (balance >= 0),
+  balance bigint not null default 100000 check (balance >= 0),
   total_won bigint not null default 0,
   biggest_win bigint not null default 0,
   spins bigint not null default 0,
@@ -32,6 +32,9 @@ alter table public.profiles add column if not exists watch_day date;
 alter table public.profiles add column if not exists watch_today int not null default 0;
 alter table public.profiles add column if not exists watch_started timestamptz;
 alter table public.profiles add column if not exists last_watch timestamptz;
+
+-- Nya konton får 100 000 kr (låtsaspengar)
+alter table public.profiles alter column balance set default 100000;
 
 create unique index if not exists profiles_username_lower on public.profiles (lower(username));
 create index if not exists profiles_balance on public.profiles (balance desc);
@@ -82,7 +85,7 @@ as $$
      and not exists (select 1 from profiles where lower(username) = lower(p_name));
 $$;
 
--- ---------- Daglig bonus (1 000 mynt var 24:e timme) ----------
+-- ---------- Daglig bonus (10 000 kr var 24:e timme) ----------
 create or replace function public.claim_daily()
 returns json
 language plpgsql
@@ -99,14 +102,14 @@ begin
   if me.last_daily is not null and me.last_daily > now() - interval '24 hours' then
     return json_build_object('ok', false, 'balance', me.balance, 'last_daily', me.last_daily);
   end if;
-  update profiles set balance = balance + 1000, last_daily = now()
+  update profiles set balance = balance + 10000, last_daily = now()
   where id = auth.uid()
   returning * into me;
   return json_build_object('ok', true, 'balance', me.balance, 'last_daily', me.last_daily);
 end;
 $$;
 
--- ---------- Gratis påfyllning när saldot är under 100 ----------
+-- ---------- Gratis påfyllning till 100 000 kr när saldot är under 1 000 ----------
 create or replace function public.refill()
 returns bigint
 language plpgsql
@@ -119,8 +122,8 @@ begin
   if auth.uid() is null then
     raise exception 'not_logged_in';
   end if;
-  update profiles set balance = 10000
-  where id = auth.uid() and balance < 100
+  update profiles set balance = 100000
+  where id = auth.uid() and balance < 1000
   returning balance into new_balance;
   if new_balance is null then
     select balance into new_balance from profiles where id = auth.uid();
@@ -173,14 +176,32 @@ create policy "Alla kan läsa turneringar" on public.tournaments for select usin
 drop policy if exists "Alla kan läsa deltagare" on public.tournament_entries;
 create policy "Alla kan läsa deltagare" on public.tournament_entries for select using (true);
 
+-- ---------- Engångsbyte till kronor med högre insatser (allt ×10) ----------
+-- Körs bara första gången filen körs efter uppdateringen; flaggan i settings hindrar dubbel uppräkning.
+do $$
+begin
+  if not exists (select 1 from public.settings where key = 'economy_v2') then
+    update public.profiles set
+      balance = balance * 10,
+      total_won = total_won * 10,
+      biggest_win = biggest_win * 10,
+      last_bet = last_bet * 10;
+    update public.tournaments set prize_pool = prize_pool * 10, entry_fee = entry_fee * 10 where not settled;
+    update public.tournament_entries e set score = score * 10
+      from public.tournaments t
+      where e.tournament_id = t.id and not t.settled and t.metric = 'total_win';
+    insert into public.settings (key, value) values ('economy_v2', 'true'::jsonb);
+  end if;
+end $$;
+
 -- En första turnering så att listan inte är tom
 insert into public.tournaments (name, metric, ends_at, prize_pool)
-select 'Veckans storvinst', 'multiplier', now() + interval '7 days', 100000
+select 'Veckans storvinst', 'multiplier', now() + interval '7 days', 1000000
 where not exists (select 1 from public.tournaments);
 
 -- ---------- Nivåer ----------
--- XP per snurr: 10 + insatsen/20 (max 60). Nivå = floor(sqrt(xp/100)) + 1.
--- Ny nivå N ger N × 250 mynt. Samma formler finns i js/lib/levels.js.
+-- XP per snurr: 10 + insatsen/200 (max 60). Nivå = floor(sqrt(xp/100)) + 1.
+-- Ny nivå N ger N × 2 500 kr. Samma formler finns i js/lib/levels.js.
 create or replace function public.level_for_xp(p_xp bigint)
 returns int
 language sql
@@ -206,8 +227,8 @@ begin
   if auth.uid() is null then
     raise exception 'not_logged_in';
   end if;
-  -- Insatsen får vara högst 1 000 per snurr, och upp till 500 000 för bonusköp
-  if p_bet is null or p_win is null or p_bet < 0 or p_win < 0 or p_bet > 500000 then
+  -- Insatsen får vara högst 10 000 per snurr, och upp till 10 000 000 för bonusköp
+  if p_bet is null or p_win is null or p_bet < 0 or p_win < 0 or p_bet > 10000000 then
     raise exception 'invalid_amount';
   end if;
 
@@ -228,12 +249,12 @@ begin
   end if;
 
   if p_bet > 0 then
-    gained := 10 + least(p_bet, 1000) / 20;
+    gained := 10 + least(p_bet, 10000) / 200;
   end if;
   new_level := level_for_xp(me.xp + gained);
   if new_level > me.level then
-    -- Summan av N × 250 för varje ny nivå
-    select coalesce(sum(n * 250), 0) into reward from generate_series(me.level + 1, new_level) as n;
+    -- Summan av N × 2 500 för varje ny nivå
+    select coalesce(sum(n * 2500), 0) into reward from generate_series(me.level + 1, new_level) as n;
   end if;
 
   update profiles set
@@ -275,7 +296,7 @@ set search_path = public
 as $$ select (play_round(p_bet, p_win, null) ->> 'balance')::bigint $$;
 
 -- ---------- "Titta och få mynt" ----------
--- Spelaren tittar på en bild i 20 sekunder och får 250 mynt.
+-- Spelaren tittar på en bild i 20 sekunder och får 2 500 kr.
 -- Högst 10 gånger per dygn och minst 3 minuter mellan gångerna.
 -- start_watch() startar klockan, claim_watch_reward() kräver att 20 sekunder gått.
 create or replace function public.start_watch()
@@ -328,7 +349,7 @@ begin
     return json_build_object('ok', false, 'balance', me.balance);
   end if;
   update profiles set
-    balance = balance + 250,
+    balance = balance + 2500,
     watch_day = today,
     watch_today = used + 1,
     watch_started = null,

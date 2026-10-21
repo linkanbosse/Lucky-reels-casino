@@ -25,7 +25,7 @@ export function openCoffee() {
     `<div class="coffee">
       ${cupSvg}
       <h2 class="auth__title" style="padding:0">Bjud mig på kaffe</h2>
-      <p class="form__intro">Lucky Reels är gratis och utan riktiga insatser. Gillar du sidan får du gärna bjuda på en kaffe – helt frivilligt, och du får inga mynt eller fördelar för det.</p>
+      <p class="form__intro">Lucky Reels är gratis och utan riktiga insatser. Gillar du sidan får du gärna bjuda på en kaffe – helt frivilligt, och du får inga låtsaspengar eller fördelar för det.</p>
       <div class="coffee__amounts" role="group" aria-label="Välj belopp">
         ${PRESETS.map((a, i) => `<button type="button" class="chip" data-amt="${a}" aria-pressed="${i === 1}">${a} kr</button>`).join("")}
       </div>

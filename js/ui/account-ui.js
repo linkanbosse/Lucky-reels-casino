@@ -1,7 +1,7 @@
 // Lucky Reels – inloggning, registrering och profil (modaler).
 
 import { account, friendlyError } from "../lib/account.js";
-import { wallet, formatCoins } from "../lib/wallet.js";
+import { wallet, formatCoins, formatKr, START_BALANCE } from "../lib/wallet.js";
 import { icons } from "./icons.js";
 import { openModal, closeModal, toast } from "./feedback.js";
 import { progress, titleFor } from "../lib/levels.js";
@@ -66,7 +66,7 @@ function openAuth(mode = "login") {
     submit.textContent = m === "signup" ? "Skapa konto" : m === "reset" ? "Skicka återställningslänk" : "Logga in";
     $("[data-intro]", content).textContent =
       m === "signup"
-        ? "Spara ditt saldo i molnet, spela på flera enheter och tävla på topplistan. Nya konton får 10 000 mynt."
+        ? "Spara ditt saldo i molnet, spela på flera enheter och tävla på topplistan. Nya konton får ${formatKr(START_BALANCE)} i låtsaspengar."
         : m === "reset"
           ? "Ange din e-post så skickar vi en länk där du väljer ett nytt lösenord."
           : "Logga in för att fortsätta med ditt sparade saldo.";
@@ -106,7 +106,7 @@ function openAuth(mode = "login") {
           showMessage("Kolla din e-post", `Vi har skickat en bekräftelselänk till <strong>${escapeHtml(email)}</strong>. Klicka på länken för att aktivera kontot – titta även i skräpposten.`);
         } else {
           closeModal();
-          toast(`Välkommen, ${username}! Du har 10 000 mynt.`, { icon: icons.user });
+          toast(`Välkommen, ${username}! Du har ${formatKr(START_BALANCE)}.`, { icon: icons.user });
         }
       } else if (mode === "reset") {
         await account.resetPassword(email);
@@ -152,15 +152,15 @@ function openProfile() {
         <div class="xp-bar"><span class="xp-bar__fill" style="width:${lv.pct}%"></span></div>
       </div>
       <dl class="profile-stats">
-        <div><dt>Saldo</dt><dd>${formatCoins(wallet.balance)}</dd></div>
-        <div><dt>Största vinst</dt><dd>${formatCoins(s.biggestWin)}</dd></div>
+        <div><dt>Saldo</dt><dd>${formatKr(wallet.balance)}</dd></div>
+        <div><dt>Största vinst</dt><dd>${formatKr(s.biggestWin)}</dd></div>
         <div><dt>Antal snurr</dt><dd>${formatCoins(s.spins)}</dd></div>
-        <div><dt>Totalt vunnet</dt><dd>${formatCoins(s.totalWon)}</dd></div>
+        <div><dt>Totalt vunnet</dt><dd>${formatKr(s.totalWon)}</dd></div>
       </dl>
       <p class="form__intro">Ditt saldo sparas i molnet och följer med till alla enheter där du loggar in.</p>
       ${p.is_admin ? `<a class="btn btn--royal" href="admin/" style="width:100%;margin-top:12px">${icons.shield}Adminpanel</a>` : ""}
       <div class="profile-actions">
-        ${wallet.canRefill() ? `<button class="btn btn--gold" type="button" data-refill>Fyll på mynt</button>` : ""}
+        ${wallet.canRefill() ? `<button class="btn btn--gold" type="button" data-refill>Fyll på saldot</button>` : ""}
         <button class="btn btn--ghost" type="button" data-logout ${wallet.canRefill() ? "" : 'style="grid-column:1/-1"'}>Logga ut</button>
       </div>
     </div>`,
@@ -169,7 +169,7 @@ function openProfile() {
   $("[data-refill]", content)?.addEventListener("click", () => {
     const amount = wallet.refill();
     closeModal();
-    if (amount) toast(`Påfyllning! +${formatCoins(amount)} mynt`, { variant: "gold", icon: icons.gift });
+    if (amount) toast(`Påfyllning! +${formatKr(amount)}`, { variant: "gold", icon: icons.gift });
   });
   $("[data-logout]", content).addEventListener("click", async () => {
     await account.signOut();

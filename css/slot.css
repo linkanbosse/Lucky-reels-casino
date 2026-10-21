@@ -7,9 +7,10 @@
   --g-glow: #ffd36b;
   --cell-w: 72px;
   --cell-h: 72px;
-  background:
+  background: var(--page-bg,
     radial-gradient(90% 60% at 50% 0%, color-mix(in srgb, var(--g-glow) 28%, transparent), transparent 70%),
-    linear-gradient(180deg, var(--g-from) 0%, var(--g-to) 70%, var(--bg-0) 100%);
+    linear-gradient(180deg, var(--g-from) 0%, var(--g-to) 70%, var(--bg-0) 100%));
+  background-color: var(--g-to);
   background-attachment: fixed;
   display: flex;
   flex-direction: column;
@@ -27,16 +28,16 @@
   gap: var(--sp-2);
   height: calc(56px + env(safe-area-inset-top));
   padding: env(safe-area-inset-top) var(--gutter) 0;
-  background: rgba(8, 6, 16, 0.55);
+  background: var(--topbar-bg, rgba(8, 6, 16, 0.55));
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--topbar-line, var(--border));
 }
 
 .slot-top__title {
   flex: 1;
   min-width: 0;
-  font-family: var(--font-display);
+  font-family: var(--font-logo, var(--font-display));
   font-weight: 900;
   font-size: 1.05rem;
   letter-spacing: 0.04em;
@@ -124,30 +125,89 @@
 /* ---------- Maskinram ---------- */
 .frame {
   position: relative;
-  padding: 10px;
-  border-radius: 24px;
-  background: linear-gradient(180deg, #2a1d05, #120c02);
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.65), 0 0 40px color-mix(in srgb, var(--g-glow) 35%, transparent);
+  margin-top: 30px;
+  padding: var(--frame-pad, 10px);
+  border-radius: var(--frame-radius, 24px);
+  background: var(--frame-bg, linear-gradient(180deg, #2a1d05, #120c02));
+  box-shadow: var(--frame-shadow, 0 24px 60px rgba(0, 0, 0, 0.65), 0 0 40px color-mix(in srgb, var(--g-glow) 35%, transparent));
   isolation: isolate;
 }
 
 .frame::before {
   content: "";
   position: absolute;
-  inset: -2px;
+  inset: var(--rim-inset, -2px);
   z-index: -1;
-  border-radius: 26px;
-  background: var(--grad-gold);
+  border-radius: calc(var(--frame-radius, 24px) + 2px);
+  /* Kanten (--frame-rim) är --rim-width bred, innanför syns --frame-bg.
+     Utan --rim-width fyller kanten hela ramen. */
+  border: var(--rim-width, 40px) solid transparent;
+  background: var(--frame-bg, transparent) padding-box, var(--frame-rim, var(--grad-gold)) border-box;
+}
+
+/* Dekor runt ramen (lampor, nitar, ränder …) – ritas av spelets skin */
+.frame__deco {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+/* Spelets skylt ovanpå ramen */
+.frame__topper {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  z-index: 3;
+  display: grid;
+  justify-items: center;
+  min-width: 56%;
+  max-width: 92%;
+  padding: 5px 18px 6px;
+  transform: translate(-50%, -62%);
+  border-radius: var(--topper-radius, 14px);
+  background: var(--topper-bg, linear-gradient(180deg, #2a1d05, #120c02));
+  box-shadow: var(--topper-shadow, 0 0 0 2px #e0a722, 0 8px 20px rgba(0, 0, 0, 0.6));
+  text-align: center;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.frame__logo {
+  font-family: var(--font-logo, var(--font-display));
+  font-size: var(--logo-size, 1.35rem);
+  font-weight: var(--logo-weight, 900);
+  line-height: 1.05;
+  letter-spacing: var(--logo-spacing, 0.03em);
+  text-transform: var(--logo-case, none);
+  background: var(--logo-grad, var(--grad-gold));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: var(--logo-filter, drop-shadow(0 2px 0 rgba(0, 0, 0, 0.6)));
+}
+
+.frame__sub {
+  margin-top: 1px;
+  font-size: 0.5625rem;
+  font-weight: 800;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--sub-color, rgba(255, 255, 255, 0.7));
 }
 
 .in-free-spins .frame::before {
-  background: linear-gradient(135deg, #f0abfc, #8b5cf6, #22d3ee, #8b5cf6, #f0abfc);
-  background-size: 300% 300%;
+  background:
+    var(--frame-bg, transparent) padding-box,
+    var(--fs-rim, linear-gradient(135deg, #f0abfc, #8b5cf6, #22d3ee, #8b5cf6, #f0abfc)) border-box;
+  background-size: 100% 100%, 300% 300%;
   animation: fs-border 3s linear infinite;
 }
 
 @keyframes fs-border {
-  to { background-position: 300% 0; }
+  from { background-position: 0 0, 0 0; }
+  to { background-position: 0 0, 300% 0; }
 }
 
 .reels {
@@ -156,8 +216,8 @@
   grid-template-columns: repeat(var(--reels), var(--cell-w));
   gap: 4px;
   padding: 4px;
-  border-radius: 16px;
-  background: #07040f;
+  border-radius: var(--reels-radius, 16px);
+  background: var(--reels-bg, #07040f);
   box-shadow: inset 0 8px 20px rgba(0, 0, 0, 0.9);
 }
 
@@ -165,16 +225,17 @@
   position: relative;
   height: calc(var(--cell-h) * var(--rows));
   overflow: hidden;
-  border-radius: 10px;
-  background:
+  border-radius: var(--reel-radius, 10px);
+  background: var(--reel-bg,
     linear-gradient(180deg, rgba(0, 0, 0, 0.35), transparent 18%, transparent 82%, rgba(0, 0, 0, 0.35)),
-    linear-gradient(180deg, #f3efff, #ffffff 50%, #ece6ff);
+    linear-gradient(180deg, #f3efff, #ffffff 50%, #ece6ff));
+  box-shadow: var(--reel-shadow, none);
 }
 
 .in-free-spins .reel-col {
-  background:
+  background: var(--reel-bg-free,
     linear-gradient(180deg, rgba(0, 0, 0, 0.35), transparent 18%, transparent 82%, rgba(0, 0, 0, 0.35)),
-    linear-gradient(180deg, #efe4ff, #faf5ff 50%, #e6dcff);
+    linear-gradient(180deg, #efe4ff, #faf5ff 50%, #e6dcff));
 }
 
 .reel-col.is-anticipating {
@@ -221,8 +282,8 @@
   position: absolute;
   inset: 3px;
   border-radius: 10px;
-  background: radial-gradient(circle, color-mix(in srgb, var(--g-glow) 45%, transparent), transparent 70%);
-  box-shadow: inset 0 0 0 2px var(--gold-2);
+  background: radial-gradient(circle, color-mix(in srgb, var(--win-color, var(--g-glow)) 45%, transparent), transparent 70%);
+  box-shadow: inset 0 0 0 2px var(--win-ring, var(--gold-2)), 0 0 14px color-mix(in srgb, var(--win-ring, var(--gold-2)) 60%, transparent);
 }
 
 @keyframes cell-win {
@@ -288,8 +349,12 @@
   line-height: 1.1;
 }
 
+.winbar__amount {
+  font-family: var(--font-num, inherit);
+}
+
 .winbar__amount.is-active {
-  background: var(--grad-gold);
+  background: var(--win-grad, var(--grad-gold));
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -319,8 +384,8 @@
   gap: 4px;
   padding: 4px;
   border-radius: var(--r-pill);
-  background: rgba(0, 0, 0, 0.4);
-  border: 1px solid var(--border-strong);
+  background: var(--ui-bg, rgba(0, 0, 0, 0.4));
+  border: 1px solid var(--ui-border, var(--border-strong));
 }
 
 .bet button {
@@ -329,7 +394,8 @@
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: var(--surface-2);
+  background: var(--ui-btn, var(--surface-2));
+  color: var(--ui-btn-fg, inherit);
   font-size: 1.4rem;
   font-weight: 800;
   line-height: 1;
@@ -367,9 +433,9 @@
   width: 84px;
   height: 84px;
   border-radius: 50%;
-  background: var(--grad-gold);
-  color: #2b1700;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), var(--glow-gold), inset 0 2px 0 rgba(255, 255, 255, 0.7), inset 0 -4px 0 rgba(120, 60, 0, 0.35);
+  background: var(--spin-bg, var(--grad-gold));
+  color: var(--spin-fg, #2b1700);
+  box-shadow: var(--spin-shadow, 0 8px 24px rgba(0, 0, 0, 0.5), var(--glow-gold), inset 0 2px 0 rgba(255, 255, 255, 0.7), inset 0 -4px 0 rgba(120, 60, 0, 0.35));
   transition: transform var(--t-fast) var(--ease-out), filter var(--t-med);
   touch-action: manipulation;
 }
@@ -379,7 +445,7 @@
   position: absolute;
   inset: -6px;
   border-radius: 50%;
-  border: 2px solid rgba(255, 211, 107, 0.35);
+  border: 2px solid var(--spin-ring, rgba(255, 211, 107, 0.35));
 }
 
 .spin-btn svg {
@@ -419,8 +485,8 @@
   width: 46px;
   height: 46px;
   border-radius: 50%;
-  background: rgba(0, 0, 0, 0.4);
-  border: 1px solid var(--border-strong);
+  background: var(--ui-bg, rgba(0, 0, 0, 0.4));
+  border: 1px solid var(--ui-border, var(--border-strong));
   font-size: 0.6875rem;
   font-weight: 800;
   letter-spacing: 0.04em;
@@ -428,9 +494,9 @@
 }
 
 .round-btn[aria-pressed="true"] {
-  background: rgba(255, 211, 107, 0.16);
-  border-color: var(--gold-2);
-  color: var(--gold-1);
+  background: color-mix(in srgb, var(--accent, var(--gold-2)) 18%, transparent);
+  border-color: var(--accent, var(--gold-2));
+  color: var(--accent-light, var(--gold-1));
 }
 
 .round-btn[disabled] {
@@ -445,8 +511,9 @@
 
 .toolbar-mini .btn {
   min-height: 36px;
-  padding: 0 var(--sp-4);
+  padding: 0 var(--sp-3);
   font-size: var(--fs-xs);
+  white-space: nowrap;
 }
 
 .toolbar-mini .icon {
@@ -593,7 +660,7 @@
   display: grid;
   place-items: center;
   padding: var(--gutter);
-  background: radial-gradient(circle, rgba(20, 10, 40, 0.88), rgba(0, 0, 0, 0.95));
+  background: var(--overlay-bg, radial-gradient(circle, rgba(20, 10, 40, 0.88), rgba(0, 0, 0, 0.95)));
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
   text-align: center;
@@ -609,16 +676,16 @@
   font-size: var(--fs-sm);
   font-weight: 800;
   letter-spacing: 0.3em;
-  color: var(--gold-2);
+  color: var(--accent, var(--gold-2));
 }
 
 .overlay__title {
   margin-top: var(--sp-2);
-  font-family: var(--font-display);
+  font-family: var(--font-logo, var(--font-display));
   font-size: clamp(2.4rem, 12vw, 4.5rem);
   font-weight: 900;
   line-height: 1;
-  background: var(--grad-gold);
+  background: var(--title-grad, var(--grad-gold));
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -792,10 +859,6 @@
   color: #2b1700;
 }
 
-.in-hold-win .reel-col {
-  background: linear-gradient(180deg, #1a1206, #0d0903);
-}
-
 .cell--empty {
   border-radius: 10px;
   background: radial-gradient(circle, rgba(255, 211, 107, 0.06), transparent 70%);
@@ -850,30 +913,6 @@
   position: relative;
   z-index: 1;
 }
-
-/* Tematiska hjul */
-[data-scene="western"] .reel-col {
-  background:
-    linear-gradient(180deg, rgba(60, 25, 5, 0.35), transparent 18%, transparent 82%, rgba(60, 25, 5, 0.35)),
-    linear-gradient(180deg, #f3dfb6, #fbf0d6 50%, #e9cf9c);
-}
-
-[data-scene="prison"] .reel-col {
-  background:
-    linear-gradient(180deg, rgba(2, 6, 23, 0.35), transparent 18%, transparent 82%, rgba(2, 6, 23, 0.35)),
-    linear-gradient(180deg, #dfe5ee, #f4f6fa 50%, #cfd8e3);
-}
-
-[data-scene="rail"] .reel-col {
-  background:
-    linear-gradient(180deg, rgba(50, 15, 5, 0.35), transparent 18%, transparent 82%, rgba(50, 15, 5, 0.35)),
-    linear-gradient(180deg, #f6e3cf, #fdf3e7 50%, #ecd2b6);
-}
-
-[data-scene="western"] .frame { background: linear-gradient(180deg, #3b1d08, #170a02); }
-[data-scene="prison"] .frame { background: linear-gradient(180deg, #1e293b, #0b1220); }
-[data-scene="prison"] .frame::before { background: linear-gradient(135deg, #e2e8f0, #64748b, #f8fafc, #475569); }
-[data-scene="rail"] .frame { background: linear-gradient(180deg, #3a1006, #160602); }
 
 /* Bonusnivåer: ramen glöder starkare ju högre nivå */
 [data-bonus-level="1"] .frame { box-shadow: 0 24px 60px rgba(0, 0, 0, 0.65), 0 0 60px color-mix(in srgb, #f97316 60%, transparent); }
@@ -1115,8 +1154,8 @@
   font-size: var(--fs-sm);
 }
 
-.in-hold-win[data-scene] .reel-col {
-  background: linear-gradient(180deg, #1a1206, #0d0903);
+.in-hold-win .reel-col {
+  background: var(--reel-bg-hold, linear-gradient(180deg, #1a1206, #0d0903));
 }
 
 .slot-xp {
@@ -1126,3 +1165,11 @@
   max-width: 520px;
   margin: 8px auto 0;
 }
+
+/* Spelets namn står på skylten ovanför ramen – toppfältet behöver det inte på mobil */
+@media (max-width: 600px) and (orientation: portrait) {
+  .slot-top__title {
+    opacity: 0;
+  }
+}
+

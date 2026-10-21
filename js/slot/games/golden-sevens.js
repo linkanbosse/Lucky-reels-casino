@@ -1,5 +1,6 @@
 // Golden Sevens – klassisk 3×3 fruktautomat. WILD ersätter allt och dubblar vinsten.
 import { GAMES } from "../../data/games.js";
+import { BETS } from "../bets.js";
 import { LINES_3x3 } from "../engine.js";
 
 const reel = { cherry: 7, lemon: 6, orange: 6, plum: 5, bell: 4, bar: 3, seven: 2, wild: 1 };
@@ -10,7 +11,7 @@ export default {
   reels: 3,
   rows: 3,
   lines: LINES_3x3,
-  bets: [10, 20, 50, 100, 200, 500, 1000],
+  bets: BETS,
   wild: "wild",
   wildMultiplier: 2,
   symbols: {

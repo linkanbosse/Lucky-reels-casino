@@ -1,0 +1,117 @@
+/* Golden Sevens – Vegas-neon: tegelvägg, neonrör och glödlampor som jagar runt ramen */
+
+[data-game="golden-sevens"] {
+  --font-logo: "Monoton", var(--font-display);
+  --font-num: "Bungee", var(--font-body);
+  --accent: #22e3ff;
+  --accent-light: #b8f6ff;
+  --pink: #ff3df0;
+
+  --page-bg:
+    radial-gradient(60% 40% at 15% 20%, rgba(255, 61, 240, 0.22), transparent 70%),
+    radial-gradient(60% 40% at 85% 30%, rgba(34, 227, 255, 0.18), transparent 70%),
+    repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.55) 0 2px, transparent 2px 26px),
+    repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.4) 0 2px, transparent 2px 52px),
+    linear-gradient(180deg, #24101f, #120814 60%, #07040a);
+  --topbar-bg: rgba(10, 4, 16, 0.85);
+  --topbar-line: rgba(255, 61, 240, 0.5);
+
+  --frame-radius: 22px;
+  --frame-pad: 14px;
+  --rim-width: 5px;
+  --rim-inset: -4px;
+  --frame-bg: linear-gradient(180deg, #170b1f, #0a0510);
+  --frame-rim: linear-gradient(135deg, #ff3df0, #22e3ff 50%, #ff3df0);
+  --frame-shadow: 0 24px 60px rgba(0, 0, 0, 0.7), 0 0 26px rgba(255, 61, 240, 0.55), 0 0 60px rgba(34, 227, 255, 0.25);
+
+  --reels-bg: #030206;
+  --reel-bg:
+    linear-gradient(180deg, rgba(255, 61, 240, 0.16), transparent 22%, transparent 78%, rgba(34, 227, 255, 0.16)),
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.04) 0 1px, transparent 1px 18px),
+    linear-gradient(180deg, #120a1c, #07040d 50%, #120a1c);
+  --reel-bg-free:
+    linear-gradient(180deg, rgba(34, 227, 255, 0.28), transparent 25%, transparent 75%, rgba(255, 61, 240, 0.28)),
+    linear-gradient(180deg, #0d1424, #05070d 50%, #0d1424);
+  --reel-shadow: inset 0 0 0 1px rgba(255, 61, 240, 0.25), inset 0 0 16px rgba(255, 61, 240, 0.15);
+
+  --topper-bg: linear-gradient(180deg, #160a1e, #07030b);
+  --topper-shadow: 0 0 0 2px #ff3df0, 0 0 18px rgba(255, 61, 240, 0.8), 0 0 0 5px #07030b, 0 0 0 7px #22e3ff, 0 10px 24px rgba(0, 0, 0, 0.7);
+  --topper-radius: 999px;
+  --logo-size: 1.3rem;
+  --logo-weight: 400;
+  --logo-spacing: 0.02em;
+  --logo-grad: linear-gradient(180deg, #fff 0%, #ffd1fb 40%, #ff3df0 100%);
+  --logo-filter: drop-shadow(0 0 6px rgba(255, 61, 240, 0.9)) drop-shadow(0 0 2px #fff);
+  --sub-color: #7df4ff;
+
+  --spin-bg: radial-gradient(circle at 35% 28%, #ffe3fb 0 8%, #ff6bf3 26%, #d916c4 58%, #5c0752 100%);
+  --spin-fg: #fff;
+  --spin-ring: rgba(34, 227, 255, 0.7);
+  --spin-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), 0 0 26px rgba(255, 61, 240, 0.75), inset 0 2px 0 rgba(255, 255, 255, 0.6), inset 0 -5px 0 rgba(60, 0, 50, 0.45);
+  --ui-bg: rgba(20, 6, 26, 0.75);
+  --ui-border: rgba(255, 61, 240, 0.5);
+  --ui-btn: rgba(255, 61, 240, 0.14);
+
+  --win-grad: linear-gradient(90deg, #fff35c, #ff3df0 50%, #22e3ff);
+  --win-ring: #22e3ff;
+  --win-color: #ff3df0;
+  --title-grad: linear-gradient(180deg, #fff, #ff9cf6 45%, #ff3df0);
+  --overlay-bg: radial-gradient(circle, rgba(60, 6, 60, 0.9), rgba(0, 0, 0, 0.96));
+}
+
+/* Glödlampor runt ramen som tänds i tur och ordning */
+[data-game="golden-sevens"] .frame__deco {
+  inset: -4px;
+  padding: 9px;
+  border-radius: 26px;
+  background:
+    radial-gradient(circle, #fffbe0 0 2px, #ffcf3a 2.6px, rgba(255, 180, 0, 0.35) 4.5px, transparent 5.5px) 0 0 / 18px 18px;
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: gs-bulbs 1.2s steps(2) infinite;
+}
+
+@keyframes gs-bulbs {
+  to { background-position: 9px 9px; }
+}
+
+[data-game="golden-sevens"] .frame__logo {
+  -webkit-background-clip: text;
+  animation: gs-flicker 6s infinite;
+}
+
+@keyframes gs-flicker {
+  0%, 19%, 22%, 62%, 64%, 100% { opacity: 1; }
+  20%, 63% { opacity: 0.55; }
+}
+
+[data-game="golden-sevens"] .slot-top__title {
+  font-family: "Bungee", var(--font-body);
+  font-weight: 400;
+}
+
+[data-game="golden-sevens"] .cell svg {
+  filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.18)) drop-shadow(0 3px 3px rgba(0, 0, 0, 0.5));
+}
+
+[data-game="golden-sevens"] .winbar__amount.is-active {
+  filter: drop-shadow(0 0 10px rgba(255, 61, 240, 0.7));
+}
+
+[data-game="golden-sevens"] .overlay__title {
+  font-weight: 400;
+  filter: drop-shadow(0 0 14px #ff3df0) drop-shadow(0 0 3px #fff);
+}
+
+[data-game="golden-sevens"] .overlay__amount {
+  font-family: "Bungee", var(--font-body);
+  font-weight: 400;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-game="golden-sevens"] .frame__deco,
+  [data-game="golden-sevens"] .frame__logo {
+    animation: none;
+  }
+}

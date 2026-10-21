@@ -1,0 +1,92 @@
+/* Royal Crown – kungens skattkammare: sammetsröd damast, tjock förgylld ram och elfenbenshjul */
+
+[data-game="royal-crown"] {
+  --font-logo: "Cinzel Decorative", var(--font-display);
+  --accent: #f7d774;
+  --accent-light: #fff3c4;
+  --gold-metal: linear-gradient(180deg, #fff3c4 0%, #e8b923 18%, #8a5a06 42%, #f7d774 58%, #a8740c 82%, #fff1b8 100%);
+
+  --page-bg:
+    radial-gradient(70% 45% at 50% 0%, rgba(255, 196, 77, 0.22), transparent 70%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60' viewBox='0 0 60 60'%3E%3Cg fill='%23ffd36b' opacity='.07'%3E%3Cpath d='M30 8c4 6 4 10 0 14-4-4-4-8 0-14Zm-10 14c6 0 9 3 10 8-6 0-9-3-10-8Zm20 0c-1 5-4 8-10 8 1-5 4-8 10-8ZM28 30h4v12h-4Z'/%3E%3Ccircle cx='0' cy='0' r='3'/%3E%3Ccircle cx='60' cy='0' r='3'/%3E%3Ccircle cx='0' cy='60' r='3'/%3E%3Ccircle cx='60' cy='60' r='3'/%3E%3C/g%3E%3C/svg%3E") 0 0 / 60px 60px,
+    linear-gradient(180deg, #5a0b1e 0%, #33040f 55%, #160106 100%);
+  --topbar-bg: rgba(30, 2, 8, 0.85);
+  --topbar-line: rgba(247, 215, 116, 0.4);
+
+  --frame-radius: 18px;
+  --frame-pad: 12px;
+  --rim-inset: -7px;
+  --frame-bg: linear-gradient(180deg, #6b0f24, #2a030c);
+  --frame-rim: var(--gold-metal);
+  --frame-shadow: 0 24px 60px rgba(0, 0, 0, 0.75), 0 0 40px rgba(255, 196, 77, 0.35), inset 0 0 0 2px rgba(255, 230, 150, 0.4);
+
+  --reels-bg: #2a1a05;
+  --reels-radius: 10px;
+  --reel-radius: 6px;
+  --reel-bg:
+    linear-gradient(180deg, rgba(90, 40, 0, 0.3), transparent 16%, transparent 84%, rgba(90, 40, 0, 0.3)),
+    radial-gradient(120% 70% at 50% 50%, #fffaf0, #f6e9c8 70%, #e8d29e);
+  --reel-bg-free:
+    linear-gradient(180deg, rgba(120, 10, 40, 0.35), transparent 16%, transparent 84%, rgba(120, 10, 40, 0.35)),
+    radial-gradient(120% 70% at 50% 50%, #fff3f6, #f7d9e2 70%, #e8b4c4);
+  --reel-shadow: inset 0 0 0 1px rgba(138, 90, 6, 0.6);
+
+  --topper-bg: linear-gradient(180deg, #7a1028, #3a0412);
+  --topper-shadow: 0 0 0 3px #e8b923, 0 0 0 5px #5a3a05, 0 10px 24px rgba(0, 0, 0, 0.7);
+  --topper-radius: 12px 12px 22px 22px;
+  --logo-size: 1.25rem;
+  --logo-grad: linear-gradient(180deg, #fffbe6 0%, #f7d774 40%, #c58a0f 75%, #fff1b8 100%);
+  --logo-filter: drop-shadow(0 2px 0 #3b0412);
+  --sub-color: #f7d774;
+
+  --spin-bg:
+    radial-gradient(circle, #ff8aa0 0 7px, #c8102e 9px 15px, #7a0018 17px, transparent 18px),
+    var(--gold-metal);
+  --spin-fg: #3b0412;
+  --spin-ring: rgba(247, 215, 116, 0.6);
+  --ui-bg: rgba(40, 3, 12, 0.75);
+  --ui-border: rgba(247, 215, 116, 0.45);
+  --ui-btn: rgba(247, 215, 116, 0.14);
+
+  --win-grad: var(--gold-metal);
+  --win-ring: #e8b923;
+  --win-color: #ffd36b;
+  --title-grad: var(--gold-metal);
+  --overlay-bg: radial-gradient(circle, rgba(90, 10, 30, 0.92), rgba(10, 0, 3, 0.97));
+}
+
+/* Krona ovanpå skylten och ornament i ramens hörn */
+[data-game="royal-crown"] .frame__topper::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: -24px;
+  width: 46px;
+  height: 30px;
+  transform: translateX(-50%);
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 66'%3E%3Cdefs%3E%3ClinearGradient id='g' x2='0' y2='1'%3E%3Cstop offset='0' stop-color='%23fff4c2'/%3E%3Cstop offset='.5' stop-color='%23facc15'/%3E%3Cstop offset='1' stop-color='%23a16207'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M8 56 4 14l24 18L50 4l22 28 24-18-4 42Z' fill='url(%23g)' stroke='%235a3a05' stroke-width='4' stroke-linejoin='round'/%3E%3Ccircle cx='50' cy='40' r='7' fill='%23e11d48' stroke='%235a3a05' stroke-width='2'/%3E%3Ccircle cx='26' cy='44' r='4' fill='%2322d3ee'/%3E%3Ccircle cx='74' cy='44' r='4' fill='%2322d3ee'/%3E%3C/svg%3E") center / contain no-repeat;
+  filter: drop-shadow(0 3px 4px rgba(0, 0, 0, 0.6));
+}
+
+[data-game="royal-crown"] .frame__deco {
+  inset: -14px;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cg transform=''%3E%3Cdefs%3E%3ClinearGradient id='g' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23fff4c2'/%3E%3Cstop offset='.5' stop-color='%23e8b923'/%3E%3Cstop offset='1' stop-color='%238a5a06'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M3 3h22c-2 5-7 8-13 8 2 2 3 4 3 7-5 0-8-3-9-6 0 4-1 8-3 13Z' fill='url(%23g)' stroke='%235a3a05' stroke-width='1.5' stroke-linejoin='round'/%3E%3Cpath d='M8 8c6 0 10 4 10 10' stroke='%235a3a05' stroke-width='1.2' fill='none'/%3E%3Ccircle cx='8' cy='8' r='3.6' fill='%23c8102e' stroke='%235a3a05'/%3E%3Ccircle cx='7' cy='7' r='1.1' fill='%23fff' opacity='.8'/%3E%3C/g%3E%3C/svg%3E") left top / 44px no-repeat,
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cg transform='translate(40 0) scale(-1 1)'%3E%3Cdefs%3E%3ClinearGradient id='g' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23fff4c2'/%3E%3Cstop offset='.5' stop-color='%23e8b923'/%3E%3Cstop offset='1' stop-color='%238a5a06'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M3 3h22c-2 5-7 8-13 8 2 2 3 4 3 7-5 0-8-3-9-6 0 4-1 8-3 13Z' fill='url(%23g)' stroke='%235a3a05' stroke-width='1.5' stroke-linejoin='round'/%3E%3Cpath d='M8 8c6 0 10 4 10 10' stroke='%235a3a05' stroke-width='1.2' fill='none'/%3E%3Ccircle cx='8' cy='8' r='3.6' fill='%23c8102e' stroke='%235a3a05'/%3E%3Ccircle cx='7' cy='7' r='1.1' fill='%23fff' opacity='.8'/%3E%3C/g%3E%3C/svg%3E") right top / 44px no-repeat,
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cg transform='translate(0 40) scale(1 -1)'%3E%3Cdefs%3E%3ClinearGradient id='g' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23fff4c2'/%3E%3Cstop offset='.5' stop-color='%23e8b923'/%3E%3Cstop offset='1' stop-color='%238a5a06'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M3 3h22c-2 5-7 8-13 8 2 2 3 4 3 7-5 0-8-3-9-6 0 4-1 8-3 13Z' fill='url(%23g)' stroke='%235a3a05' stroke-width='1.5' stroke-linejoin='round'/%3E%3Cpath d='M8 8c6 0 10 4 10 10' stroke='%235a3a05' stroke-width='1.2' fill='none'/%3E%3Ccircle cx='8' cy='8' r='3.6' fill='%23c8102e' stroke='%235a3a05'/%3E%3Ccircle cx='7' cy='7' r='1.1' fill='%23fff' opacity='.8'/%3E%3C/g%3E%3C/svg%3E") left bottom / 44px no-repeat,
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cg transform='translate(40 40) scale(-1 -1)'%3E%3Cdefs%3E%3ClinearGradient id='g' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23fff4c2'/%3E%3Cstop offset='.5' stop-color='%23e8b923'/%3E%3Cstop offset='1' stop-color='%238a5a06'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M3 3h22c-2 5-7 8-13 8 2 2 3 4 3 7-5 0-8-3-9-6 0 4-1 8-3 13Z' fill='url(%23g)' stroke='%235a3a05' stroke-width='1.5' stroke-linejoin='round'/%3E%3Cpath d='M8 8c6 0 10 4 10 10' stroke='%235a3a05' stroke-width='1.2' fill='none'/%3E%3Ccircle cx='8' cy='8' r='3.6' fill='%23c8102e' stroke='%235a3a05'/%3E%3Ccircle cx='7' cy='7' r='1.1' fill='%23fff' opacity='.8'/%3E%3C/g%3E%3C/svg%3E") right bottom / 44px no-repeat;
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.6));
+}
+
+[data-game="royal-crown"] .slot-top__title {
+  font-family: "Cinzel Decorative", var(--font-display);
+}
+
+[data-game="royal-crown"] .jackpot {
+  border-color: #e8b923;
+  background: linear-gradient(180deg, #7a1028, #3a0412);
+}
+
+[data-game="royal-crown"] .winbar__msg {
+  color: #f3d9a4;
+}

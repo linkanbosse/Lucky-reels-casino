@@ -2,6 +2,7 @@
 // Kronan är wild. Sex eller fler kronor var som helst vinner jackpotten.
 // Tre eller fler stjärnor (scatter) ger free spins där alla vinster tredubblas.
 import { GAMES } from "../../data/games.js";
+import { BETS } from "../bets.js";
 import { LINES_5x3 } from "../engine.js";
 
 const base = { ten: 12, jack: 12, queen: 11, king: 10, ace: 10, emerald: 5, sapphire: 4, ruby: 3, diamond: 2, crown: 2, star: 2 };
@@ -12,11 +13,11 @@ export default {
   reels: 5,
   rows: 3,
   lines: LINES_5x3,
-  bets: [25, 50, 100, 250, 500, 1000],
+  bets: BETS,
   wild: "crown",
   scatter: { id: "star", pays: { 3: 5, 4: 20, 5: 100 }, freeSpins: { 3: 10, 4: 15, 5: 20 } },
   freeSpinMultiplier: 3,
-  jackpot: { symbol: "crown", count: 6, seed: 50_000, contribution: 0.01 },
+  jackpot: { symbol: "crown", count: 6, seed: 500_000, contribution: 0.01 },
   symbols: {
     ten: { pays: { 3: 8, 4: 25, 5: 75 } },
     jack: { pays: { 3: 8, 4: 25, 5: 75 } },

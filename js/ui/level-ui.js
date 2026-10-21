@@ -1,6 +1,6 @@
 // Lucky Reels – nivåmärke med XP-ring, XP-list i spelen och firande vid ny nivå.
 
-import { wallet, formatCoins } from "../lib/wallet.js";
+import { wallet, formatCoins, formatKr } from "../lib/wallet.js";
 import { progress, titleFor } from "../lib/levels.js";
 import { toast, coinBurst } from "./feedback.js";
 import { icons } from "./icons.js";
@@ -54,6 +54,6 @@ export function celebrateLevelUps(anchor = () => document.querySelector(".level-
       el.classList.add("is-levelup");
       coinBurst(el, 14);
     }
-    toast(`Nivå ${level} – ${titleFor(level)}! +${formatCoins(reward)} mynt`, { variant: "gold", icon: icons.star, duration: 4200 });
+    toast(`Nivå ${level} – ${titleFor(level)}! +${formatKr(reward)}`, { variant: "gold", icon: icons.star, duration: 4200 });
   });
 }

@@ -1,0 +1,126 @@
+/* Ghost Gulch – spökstaden i skymning: plankram med smidesbeslag, efterlysningspapper och hängande träskylt */
+
+[data-game="ghost-gulch"] {
+  --font-logo: "Rye", var(--font-display);
+  --font-num: "Rye", var(--font-body);
+  --accent: #fb923c;
+  --accent-light: #fed7aa;
+
+  --page-bg:
+    radial-gradient(80% 40% at 50% 100%, rgba(251, 146, 60, 0.35), transparent 70%),
+    radial-gradient(40% 25% at 80% 12%, rgba(254, 215, 170, 0.25), transparent 70%),
+    linear-gradient(180deg, #2a1640 0%, #5a2a1a 45%, #2a1206 75%, #120702 100%);
+  --topbar-bg: rgba(30, 14, 6, 0.85);
+  --topbar-line: rgba(251, 146, 60, 0.35);
+
+  --frame-radius: 8px;
+  --frame-pad: 14px;
+  --rim-width: 5px;
+  --rim-inset: -5px;
+  /* Plankor */
+  --frame-bg:
+    linear-gradient(90deg, rgba(0, 0, 0, 0.35) 0 2px, transparent 2px) 0 0 / 46px 100%,
+    repeating-linear-gradient(0deg, rgba(40, 18, 4, 0.3) 0 1px, transparent 1px 7px),
+    linear-gradient(180deg, #7a4520, #5a3014 50%, #43230c);
+  --frame-rim: linear-gradient(180deg, #4a4a4a, #1c1c1c 40%, #3a3a3a 60%, #111);
+  --frame-shadow: 0 24px 60px rgba(0, 0, 0, 0.75), 0 0 40px rgba(251, 146, 60, 0.25);
+
+  --reels-bg: #2a1406;
+  --reels-radius: 4px;
+  --reel-radius: 2px;
+  /* Efterlysningspapper */
+  --reel-bg:
+    linear-gradient(180deg, rgba(80, 35, 5, 0.4), transparent 14%, transparent 86%, rgba(80, 35, 5, 0.4)),
+    radial-gradient(circle at 30% 20%, rgba(255, 255, 255, 0.35), transparent 40%),
+    radial-gradient(circle at 70% 80%, rgba(120, 60, 10, 0.18), transparent 35%),
+    linear-gradient(180deg, #f3dfb0, #e8cc8e 50%, #d9b46c);
+  --reel-bg-free:
+    linear-gradient(180deg, rgba(60, 0, 0, 0.45), transparent 14%, transparent 86%, rgba(60, 0, 0, 0.45)),
+    linear-gradient(180deg, #e9b98c, #d99a66 50%, #c27a45);
+  --reel-shadow: inset 0 0 12px rgba(90, 45, 10, 0.55);
+
+  --topper-bg:
+    repeating-linear-gradient(0deg, rgba(40, 18, 4, 0.3) 0 1px, transparent 1px 6px),
+    linear-gradient(180deg, #8a5228, #5a3014);
+  --topper-shadow: 0 0 0 3px #2a1406, 0 10px 22px rgba(0, 0, 0, 0.7);
+  --topper-radius: 4px;
+  --logo-size: 1.4rem;
+  --logo-weight: 400;
+  --logo-spacing: 0.02em;
+  --logo-grad: linear-gradient(180deg, #fff7e0, #fde68a 55%, #f59e0b);
+  --logo-filter: drop-shadow(0 2px 0 #2a1406);
+  --sub-color: #fed7aa;
+
+  --spin-bg:
+    radial-gradient(circle, #1c1917 0 18%, transparent 19%),
+    radial-gradient(circle at 50% 22%, #1c1917 0 9%, transparent 10%),
+    radial-gradient(circle at 50% 78%, #1c1917 0 9%, transparent 10%),
+    radial-gradient(circle at 20% 36%, #1c1917 0 9%, transparent 10%),
+    radial-gradient(circle at 80% 36%, #1c1917 0 9%, transparent 10%),
+    radial-gradient(circle at 20% 64%, #1c1917 0 9%, transparent 10%),
+    radial-gradient(circle at 80% 64%, #1c1917 0 9%, transparent 10%),
+    radial-gradient(circle at 35% 30%, #e7e5e4, #a8a29e 45%, #44403c);
+  --spin-fg: #fde68a;
+  --spin-ring: rgba(251, 146, 60, 0.6);
+  --spin-shadow: 0 8px 24px rgba(0, 0, 0, 0.65), 0 0 22px rgba(251, 146, 60, 0.4), inset 0 2px 0 rgba(255, 255, 255, 0.5);
+  --ui-bg: rgba(40, 18, 6, 0.75);
+  --ui-border: rgba(251, 146, 60, 0.45);
+  --ui-btn: rgba(251, 146, 60, 0.14);
+
+  --win-grad: linear-gradient(180deg, #fff7e0, #fde68a 50%, #f97316);
+  --win-ring: #b45309;
+  --win-color: #fb923c;
+  --title-grad: linear-gradient(180deg, #fff7e0, #fde68a 50%, #ea580c);
+  --overlay-bg: radial-gradient(circle, rgba(90, 40, 10, 0.92), rgba(10, 4, 0, 0.97));
+}
+
+/* Smidesbeslag med nitar i hörnen */
+[data-game="ghost-gulch"] .frame__deco {
+  inset: -6px;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath d='M2 2h30l-8 8H10v14l-8 8Z' fill='%232b2b2b' stroke='%23000' stroke-width='1.5'/%3E%3Ccircle cx='7' cy='7' r='2.6' fill='%23a8a29e' stroke='%23000'/%3E%3Ccircle cx='20' cy='6' r='2' fill='%23a8a29e' stroke='%23000'/%3E%3Ccircle cx='6' cy='20' r='2' fill='%23a8a29e' stroke='%23000'/%3E%3C/svg%3E") left top / 38px no-repeat,
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cg transform='translate(40 0) scale(-1 1)'%3E%3Cpath d='M2 2h30l-8 8H10v14l-8 8Z' fill='%232b2b2b' stroke='%23000' stroke-width='1.5'/%3E%3Ccircle cx='7' cy='7' r='2.6' fill='%23a8a29e' stroke='%23000'/%3E%3Ccircle cx='20' cy='6' r='2' fill='%23a8a29e' stroke='%23000'/%3E%3Ccircle cx='6' cy='20' r='2' fill='%23a8a29e' stroke='%23000'/%3E%3C/g%3E%3C/svg%3E") right top / 38px no-repeat,
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cg transform='translate(0 40) scale(1 -1)'%3E%3Cpath d='M2 2h30l-8 8H10v14l-8 8Z' fill='%232b2b2b' stroke='%23000' stroke-width='1.5'/%3E%3Ccircle cx='7' cy='7' r='2.6' fill='%23a8a29e' stroke='%23000'/%3E%3Ccircle cx='20' cy='6' r='2' fill='%23a8a29e' stroke='%23000'/%3E%3Ccircle cx='6' cy='20' r='2' fill='%23a8a29e' stroke='%23000'/%3E%3C/g%3E%3C/svg%3E") left bottom / 38px no-repeat,
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cg transform='translate(40 40) scale(-1 -1)'%3E%3Cpath d='M2 2h30l-8 8H10v14l-8 8Z' fill='%232b2b2b' stroke='%23000' stroke-width='1.5'/%3E%3Ccircle cx='7' cy='7' r='2.6' fill='%23a8a29e' stroke='%23000'/%3E%3Ccircle cx='20' cy='6' r='2' fill='%23a8a29e' stroke='%23000'/%3E%3Ccircle cx='6' cy='20' r='2' fill='%23a8a29e' stroke='%23000'/%3E%3C/g%3E%3C/svg%3E") right bottom / 38px no-repeat;
+}
+
+/* Skylten hänger i två rep */
+[data-game="ghost-gulch"] .frame__topper::before,
+[data-game="ghost-gulch"] .frame__topper::after {
+  content: "";
+  position: absolute;
+  top: -16px;
+  width: 4px;
+  height: 18px;
+  background: repeating-linear-gradient(160deg, #c8a165 0 3px, #8a6a3a 3px 6px);
+  border-radius: 2px;
+}
+
+[data-game="ghost-gulch"] .frame__topper::before { left: 22%; }
+[data-game="ghost-gulch"] .frame__topper::after { right: 22%; }
+
+[data-game="ghost-gulch"] .frame__topper {
+  transform: translate(-50%, -62%) rotate(-1.5deg);
+}
+
+[data-game="ghost-gulch"] .slot-top__title,
+[data-game="ghost-gulch"] .overlay__title,
+[data-game="ghost-gulch"] .overlay__amount,
+[data-game="ghost-gulch"] .fs-banner {
+  font-family: "Rye", var(--font-display);
+  font-weight: 400;
+}
+
+[data-game="ghost-gulch"] .ways-pill {
+  background: linear-gradient(180deg, #8a5228, #43230c);
+  border-color: #fb923c;
+}
+
+[data-game="ghost-gulch"] .cell svg {
+  filter: drop-shadow(0 3px 2px rgba(60, 25, 0, 0.45)) sepia(0.12);
+}
+
+[data-game="ghost-gulch"] .reels.has-win .cell:not(.is-win) {
+  opacity: 0.4;
+  filter: sepia(0.6) saturate(0.6);
+}

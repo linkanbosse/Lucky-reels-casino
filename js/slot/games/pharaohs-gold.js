@@ -2,6 +2,7 @@
 // Sex eller fler guldmynt låses fast och ger respins. Mynten kan bära Mini-, Minor- eller Major-jackpott,
 // och fylls hela brädet vinner man GRAND.
 import { GAMES } from "../../data/games.js";
+import { BETS } from "../bets.js";
 import { LINES_5x3 } from "../engine.js";
 
 const base = { ten: 11, jack: 11, queen: 10, king: 10, ace: 9, ankh: 5, eye: 4, scarab: 3, coin: 8 };
@@ -13,7 +14,7 @@ export default {
   reels: 5,
   rows: 3,
   lines: LINES_5x3.slice(0, 20),
-  bets: [20, 40, 100, 200, 400, 1000],
+  bets: BETS,
   wild: "pyramid",
   holdWin: {
     coin: "coin",

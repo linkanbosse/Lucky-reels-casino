@@ -1,0 +1,103 @@
+/* Moonlight Magic – månskensriten: stjärnhimmel, silverbåge med halvmåne och hjul som natthimlar */
+
+[data-game="moonlight-magic"] {
+  --font-logo: "Uncial Antiqua", var(--font-display);
+  --accent: #c4b5fd;
+  --accent-light: #ede9fe;
+  --silver: linear-gradient(135deg, #ffffff 0%, #c4b5fd 22%, #4c1d95 45%, #ddd6fe 62%, #6d28d9 82%, #f5f3ff 100%);
+
+  --page-bg:
+    radial-gradient(circle at 82% 9%, #fffbe8 0 26px, rgba(255, 251, 232, 0.35) 28px, rgba(196, 181, 253, 0.12) 70px, transparent 140px),
+    radial-gradient(1px 1px at 10% 20%, #fff 50%, transparent),
+    radial-gradient(1px 1px at 30% 60%, #fff 50%, transparent),
+    radial-gradient(1.5px 1.5px at 55% 15%, #fff 50%, transparent),
+    radial-gradient(1px 1px at 70% 45%, #fff 50%, transparent),
+    radial-gradient(1.5px 1.5px at 90% 70%, #fff 50%, transparent),
+    radial-gradient(1px 1px at 45% 85%, #fff 50%, transparent),
+    radial-gradient(1px 1px at 20% 90%, #fff 50%, transparent),
+    radial-gradient(60% 40% at 50% 100%, rgba(139, 92, 246, 0.3), transparent 70%),
+    linear-gradient(180deg, #120838 0%, #0b0526 55%, #04020f 100%);
+  --topbar-bg: rgba(10, 5, 30, 0.8);
+  --topbar-line: rgba(196, 181, 253, 0.35);
+
+  --frame-radius: 28px;
+  --frame-pad: 12px;
+  --rim-width: 5px;
+  --rim-inset: -4px;
+  --frame-bg: linear-gradient(180deg, #1e1050, #0b0526);
+  --frame-rim: var(--silver);
+  --frame-shadow: 0 24px 60px rgba(0, 0, 0, 0.7), 0 0 40px rgba(167, 139, 250, 0.45), 0 0 90px rgba(125, 211, 252, 0.15);
+
+  --reels-bg: #05021a;
+  --reels-radius: 20px;
+  --reel-radius: 12px;
+  --reel-bg:
+    radial-gradient(1px 1px at 30% 20%, rgba(255, 255, 255, 0.7) 50%, transparent),
+    radial-gradient(1px 1px at 70% 55%, rgba(255, 255, 255, 0.6) 50%, transparent),
+    radial-gradient(1px 1px at 40% 85%, rgba(255, 255, 255, 0.6) 50%, transparent),
+    radial-gradient(120% 50% at 50% 0%, rgba(167, 139, 250, 0.3), transparent 70%),
+    linear-gradient(180deg, #1d1250, #0e0830 50%, #1d1250);
+  --reel-bg-free:
+    radial-gradient(120% 50% at 50% 0%, rgba(125, 211, 252, 0.4), transparent 70%),
+    linear-gradient(180deg, #13305a, #08152e 50%, #13305a);
+  --reel-shadow: inset 0 0 0 1px rgba(196, 181, 253, 0.28), inset 0 0 18px rgba(167, 139, 250, 0.2);
+
+  --topper-bg: linear-gradient(180deg, #2a1870, #0f0838);
+  --topper-shadow: 0 0 0 2px #ddd6fe, 0 0 20px rgba(196, 181, 253, 0.6), 0 10px 24px rgba(0, 0, 0, 0.7);
+  --topper-radius: 999px 999px 14px 14px;
+  --logo-size: 1.3rem;
+  --logo-weight: 400;
+  --logo-grad: linear-gradient(180deg, #ffffff 0%, #ede9fe 45%, #a78bfa 100%);
+  --logo-filter: drop-shadow(0 0 8px rgba(196, 181, 253, 0.8));
+  --sub-color: #fde68a;
+
+  --spin-bg: radial-gradient(circle at 35% 30%, #ffffff 0 6%, #ddd6fe 14%, #8b5cf6 52%, #2e1065 100%);
+  --spin-fg: #fff;
+  --spin-ring: rgba(221, 214, 254, 0.6);
+  --spin-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), 0 0 30px rgba(139, 92, 246, 0.75), inset 0 2px 0 rgba(255, 255, 255, 0.5);
+  --ui-bg: rgba(20, 10, 55, 0.7);
+  --ui-border: rgba(196, 181, 253, 0.4);
+  --ui-btn: rgba(196, 181, 253, 0.12);
+
+  --win-grad: linear-gradient(180deg, #fffbe8, #fde68a 50%, #c4b5fd);
+  --win-ring: #ddd6fe;
+  --win-color: #a78bfa;
+  --title-grad: linear-gradient(180deg, #fffbe8, #ede9fe 50%, #a78bfa);
+  --overlay-bg: radial-gradient(circle, rgba(40, 20, 100, 0.9), rgba(2, 0, 10, 0.97));
+}
+
+/* Halvmåne och stjärnor på ramen */
+[data-game="moonlight-magic"] .frame__deco {
+  inset: -20px -14px auto;
+  height: 60px;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cdefs%3E%3ClinearGradient id='m' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23fffbe8'/%3E%3Cstop offset='1' stop-color='%23c4b5fd'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M26 4A16 16 0 1 0 36 30 13 13 0 1 1 26 4Z' fill='url(%23m)' stroke='%234c1d95' stroke-width='1.5'/%3E%3C/svg%3E") left top / 40px no-repeat,
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath d='M20 2l4 12 12 4-12 4-4 12-4-12-12-4 12-4Z' fill='%23fffbe8'/%3E%3Ccircle cx='34' cy='34' r='2' fill='%23ddd6fe'/%3E%3Ccircle cx='6' cy='34' r='1.4' fill='%23fff'/%3E%3C/svg%3E") right top / 34px no-repeat;
+  filter: drop-shadow(0 0 8px rgba(221, 214, 254, 0.8));
+  animation: mm-twinkle 3.2s ease-in-out infinite;
+}
+
+@keyframes mm-twinkle {
+  50% { filter: drop-shadow(0 0 14px rgba(253, 230, 138, 0.9)); }
+}
+
+[data-game="moonlight-magic"] .slot-top__title,
+[data-game="moonlight-magic"] .overlay__title {
+  font-family: "Uncial Antiqua", var(--font-display);
+  font-weight: 400;
+}
+
+[data-game="moonlight-magic"] .cell svg {
+  filter: drop-shadow(0 0 7px rgba(196, 181, 253, 0.35)) drop-shadow(0 3px 3px rgba(0, 0, 0, 0.5));
+}
+
+[data-game="moonlight-magic"] .mult-ladder span.is-active {
+  background: linear-gradient(180deg, #ede9fe, #8b5cf6);
+  color: #1e0b4a;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-game="moonlight-magic"] .frame__deco {
+    animation: none;
+  }
+}

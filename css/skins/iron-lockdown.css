@@ -1,0 +1,127 @@
+/* Iron Lockdown – högsäkerhetsfängelset: räfflad stålplåt, varningsränder, nitar och ett rött larmknapp-snurr */
+
+[data-game="iron-lockdown"] {
+  --font-logo: "Black Ops One", var(--font-display);
+  --font-num: "Black Ops One", var(--font-body);
+  --accent: #facc15;
+  --accent-light: #fef08a;
+
+  --page-bg:
+    linear-gradient(90deg, rgba(0, 0, 0, 0.35) 0 6px, transparent 6px) 0 0 / 56px 100%,
+    radial-gradient(60% 30% at 50% 0%, rgba(250, 204, 21, 0.12), transparent 70%),
+    radial-gradient(50% 40% at 85% 25%, rgba(239, 68, 68, 0.14), transparent 70%),
+    linear-gradient(180deg, #2a3240 0%, #151a22 55%, #07090c 100%);
+  --topbar-bg: rgba(10, 12, 16, 0.88);
+  --topbar-line: rgba(250, 204, 21, 0.4);
+
+  --frame-radius: 6px;
+  --frame-pad: 15px;
+  --rim-width: 8px;
+  --rim-inset: -8px;
+  /* Räfflad stålplåt */
+  --frame-bg:
+    repeating-linear-gradient(45deg, transparent 0 7px, rgba(255, 255, 255, 0.09) 7px 9px, transparent 9px 14px),
+    repeating-linear-gradient(-45deg, transparent 0 7px, rgba(0, 0, 0, 0.3) 7px 9px, transparent 9px 14px),
+    linear-gradient(180deg, #6b7280, #374151 60%, #1f2937);
+  --frame-rim: repeating-linear-gradient(-45deg, #facc15 0 11px, #111 11px 22px);
+  --frame-shadow: 0 24px 60px rgba(0, 0, 0, 0.8), 0 0 0 1px #000;
+  --fs-rim: repeating-linear-gradient(-45deg, #ef4444 0 11px, #111 11px 22px);
+
+  --reels-bg: #05070a;
+  --reels-radius: 3px;
+  --reel-radius: 2px;
+  --reel-bg:
+    linear-gradient(180deg, rgba(0, 0, 0, 0.55), transparent 16%, transparent 84%, rgba(0, 0, 0, 0.55)),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.05) 0 2px, transparent 2px 100%),
+    linear-gradient(180deg, #2b313b, #1b2027 50%, #2b313b);
+  --reel-bg-free:
+    linear-gradient(180deg, rgba(120, 0, 0, 0.5), transparent 16%, transparent 84%, rgba(120, 0, 0, 0.5)),
+    linear-gradient(180deg, #3b1f22, #22111a 50%, #3b1f22);
+  --reel-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.9), inset 0 0 14px rgba(0, 0, 0, 0.6);
+
+  --topper-bg: linear-gradient(180deg, #1f2937, #0b0f17);
+  --topper-shadow: 0 0 0 3px #facc15, 0 0 0 6px #111, 0 10px 24px rgba(0, 0, 0, 0.75);
+  --topper-radius: 2px;
+  --logo-size: 1.35rem;
+  --logo-weight: 400;
+  --logo-spacing: 0.06em;
+  --logo-case: uppercase;
+  --logo-grad: linear-gradient(180deg, #fef08a, #facc15 50%, #f97316);
+  --logo-filter: drop-shadow(0 2px 0 #000);
+  --sub-color: #9ca3af;
+
+  --spin-bg: radial-gradient(circle at 40% 32%, #ffb4b4 0 6%, #ef4444 30%, #b91c1c 62%, #450a0a 100%);
+  --spin-fg: #fff;
+  --spin-ring: transparent;
+  --spin-shadow: 0 0 0 5px #111, 0 0 0 9px #facc15, 0 0 0 11px #111, 0 10px 26px rgba(0, 0, 0, 0.7), 0 0 30px rgba(239, 68, 68, 0.5), inset 0 -6px 0 rgba(60, 0, 0, 0.5);
+  --ui-bg: rgba(17, 24, 39, 0.85);
+  --ui-border: rgba(156, 163, 175, 0.5);
+  --ui-btn: rgba(255, 255, 255, 0.08);
+
+  --win-grad: linear-gradient(180deg, #fef08a, #facc15 50%, #f97316);
+  --win-ring: #facc15;
+  --win-color: #f97316;
+  --title-grad: linear-gradient(180deg, #fef08a, #facc15 50%, #ef4444);
+  --overlay-bg: radial-gradient(circle, rgba(60, 10, 10, 0.92), rgba(0, 0, 0, 0.97));
+}
+
+/* Nitar längs stålramen */
+[data-game="iron-lockdown"] .frame__deco {
+  inset: 0;
+  padding: 7px;
+  border-radius: 6px;
+  background:
+    radial-gradient(circle at 50% 50%, #e5e7eb 0 1.5px, #6b7280 2.2px, #111 3.6px, transparent 4.2px) 0 0 / 22px 22px;
+  background-position: 3px 3px;
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+}
+
+/* Blinkande larmlampor på skylten */
+[data-game="iron-lockdown"] .frame__topper::before,
+[data-game="iron-lockdown"] .frame__topper::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 14px;
+  height: 14px;
+  margin-top: -7px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 35%, #fecaca, #ef4444 50%, #7f1d1d);
+  box-shadow: 0 0 0 2px #111, 0 0 12px #ef4444;
+  animation: il-alarm 1s steps(1) infinite;
+}
+
+[data-game="iron-lockdown"] .frame__topper::before { left: -24px; }
+[data-game="iron-lockdown"] .frame__topper::after { right: -24px; animation-delay: 0.5s; }
+
+@keyframes il-alarm {
+  50% { background: radial-gradient(circle at 40% 35%, #6b7280, #374151 50%, #111827); box-shadow: 0 0 0 2px #111; }
+}
+
+[data-game="iron-lockdown"] .slot-top__title,
+[data-game="iron-lockdown"] .overlay__title,
+[data-game="iron-lockdown"] .overlay__amount,
+[data-game="iron-lockdown"] .fs-banner {
+  font-family: "Black Ops One", var(--font-display);
+  font-weight: 400;
+  letter-spacing: 0.04em;
+}
+
+[data-game="iron-lockdown"] .ways-pill {
+  background: #111827;
+  border-color: #facc15;
+  color: #facc15;
+}
+
+[data-game="iron-lockdown"] .spin-btn::before {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-game="iron-lockdown"] .frame__topper::before,
+  [data-game="iron-lockdown"] .frame__topper::after {
+    animation: none;
+  }
+}
